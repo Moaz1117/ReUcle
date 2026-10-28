@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD in .env}
+      # one password per service database (used by infra/postgres/init.sh)
+      BIN_DB_PASSWORD: ${BIN_DB_PASSWORD:?set BIN_DB_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ADMIN_USER:-postgres}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  bin-service:
+    build: ./services/bin-service
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bin_service
+      DB_PASSWORD: ${BIN_DB_PASSWORD:?set BIN_DB_PASSWORD in .env}
+      DB_NAME: bin_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+
+volumes:
+  pgdata:

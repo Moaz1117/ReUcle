@@ -1,0 +1,2 @@
+# keep shell scripts LF so they run inside Linux containers (important on Windows)
+*.sh text eol=lf
