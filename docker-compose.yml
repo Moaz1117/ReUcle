@@ -53,5 +53,51 @@ services:
     ports:
       - '3011:3000'
 
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "3002:3001"
+
+  collection-service:
+    build: ./services/collection-service
+    ports:
+      - "3003:3003"
+
+  fleet-service:
+    build: ./services/fleet-service
+    ports:
+      - "3004:3004"
+
+  material-service:
+    build: ./services/material-service
+    ports:
+      - "3005:3005"
+
+  inventory-service:
+    build: ./services/inventory-service
+    ports:
+      - "3006:3006"
+
+  reward-service:
+    build: ./services/reward-service
+    ports:
+      - "3007:3007"
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "3008:3008"
+
+  shop-service:
+    build: ./services/shop-service
+    ports:
+      - "3009:3009"
+
+  marketplace-service:
+    build: ./services/marketplace-service
+    ports:
+      - "3010:3010"
+
 volumes:
   pgdata:
+

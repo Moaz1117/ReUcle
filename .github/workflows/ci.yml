@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         # add each new service folder name here
-        service: [bin-service, notification-service, analytics-service]
+        service: [bin-service, notification-service, analytics-service, user-service, collection-service, fleet-service, material-service, inventory-service, reward-service, payment-service, shop-service, marketplace-service]
     steps:
       - uses: actions/checkout@v4
 
