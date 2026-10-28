@@ -1,4 +1,4 @@
-﻿services:
+services:
   postgres:
     image: postgres:16-alpine
     environment:
@@ -45,6 +45,13 @@
         condition: service_healthy
     ports:
       - "3012:3000"
+
+  analytics-service:
+    build: ./services/analytics-service
+    environment:
+      PORT: 3000
+    ports:
+      - '3011:3000'
 
 volumes:
   pgdata:
