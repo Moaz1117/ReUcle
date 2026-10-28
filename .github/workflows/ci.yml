@@ -1,4 +1,4 @@
-name: ci
+﻿name: ci
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         # add each new service folder name here
-        service: [bin-service]
+        service: [bin-service, notification-service]
     steps:
       - uses: actions/checkout@v4
 

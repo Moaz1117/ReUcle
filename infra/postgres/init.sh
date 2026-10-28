@@ -15,3 +15,4 @@ EOSQL
 }
 
 create_db bin_service "$BIN_DB_PASSWORD" bin_db
+create_db notification_service "$NOTIFICATION_DB_PASSWORD" notification_db
