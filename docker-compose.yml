@@ -1,4 +1,4 @@
-services:
+﻿services:
   postgres:
     image: postgres:16-alpine
     environment:
@@ -6,6 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD in .env}
       # one password per service database (used by infra/postgres/init.sh)
       BIN_DB_PASSWORD: ${BIN_DB_PASSWORD:?set BIN_DB_PASSWORD in .env}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?set NOTIFICATION_DB_PASSWORD in .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./infra/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
@@ -29,6 +30,21 @@ services:
         condition: service_healthy
     ports:
       - "3001:3000"
+
+  notification-service:
+    build: ./services/notification-service
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: notification_service
+      DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?set NOTIFICATION_DB_PASSWORD in .env}
+      DB_NAME: notification_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3012:3000"
 
 volumes:
   pgdata:

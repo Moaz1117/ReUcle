@@ -1,0 +1,27 @@
+### Use with the "REST Client" extension in VS Code (or copy into Postman)
+### 1) health
+GET http://localhost:3001/health
+
+### 2) register a bin (copy the returned "id" into the next requests)
+POST http://localhost:3001/bins
+Content-Type: application/json
+
+{ "ownerUserId": "user-1", "deviceId": "device-001", "address": "Alamein", "thresholdPct": 80 }
+
+### 3) send a reading below the threshold -> NORMAL
+POST http://localhost:3001/bins/PASTE_BIN_ID/readings
+Content-Type: application/json
+
+{ "fillPct": 50 }
+
+### 4) send a reading at/above the threshold -> NEEDS_COLLECTION  (FR3.2)
+POST http://localhost:3001/bins/PASTE_BIN_ID/readings
+Content-Type: application/json
+
+{ "fillPct": 85 }
+
+### 5) list bins that need collection
+GET http://localhost:3001/bins/needing-collection
+
+### 6) get one bin
+GET http://localhost:3001/bins/PASTE_BIN_ID
