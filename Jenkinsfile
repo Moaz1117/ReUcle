@@ -35,19 +35,19 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
                     sh '''
-                        mvn -f services/bin-service/pom.xml sonar:sonar \
+                        mvn -f services/bin-service/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                           -Dsonar.projectKey=Moaz1117_ReUcle_bin-service \
                           -Dsonar.organization=moaz1117 \
                           -Dsonar.host.url=${SONAR_HOST_URL} \
-                          -Dsonar.login=${SONAR_TOKEN} \
+                          -Dsonar.token=${SONAR_TOKEN} \
                           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                           -Dsonar.qualitygate.wait=true
 
-                        mvn -f services/user-service/pom.xml sonar:sonar \
+                        mvn -f services/user-service/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                           -Dsonar.projectKey=Moaz1117_ReUcle_user-service \
                           -Dsonar.organization=moaz1117 \
                           -Dsonar.host.url=${SONAR_HOST_URL} \
-                          -Dsonar.login=${SONAR_TOKEN} \
+                          -Dsonar.token=${SONAR_TOKEN} \
                           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                           -Dsonar.qualitygate.wait=true
                     '''
