@@ -1,61 +1,89 @@
-name: ci
+name: ReUcle CI/CD Pipeline
 
 on:
   push:
-    branches: [main,develop]
+    branches: [ main, develop ]
   pull_request:
-
-permissions:
-  contents: read
-  packages: write
+    branches: [ main, develop ]
 
 jobs:
-  build:
+  test-and-sonar:
+    name: Unit Tests, Coverage & SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run JUnit Tests & JaCoCo (bin-service & user-service)
+        run: |
+          mvn -f services/bin-service/pom.xml clean test jacoco:report
+          mvn -f services/user-service/pom.xml clean test jacoco:report
+
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-reports
+          path: services/*/target/site/jacoco/
+
+      - name: SonarQube Scan & Quality Gate
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -f services/bin-service/pom.xml sonar:sonar \
+            -Dsonar.projectKey=Moaz1117_ReUcle_bin-service \
+            -Dsonar.organization=moaz1117 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.qualitygate.wait=true
+          mvn -f services/user-service/pom.xml sonar:sonar \
+            -Dsonar.projectKey=Moaz1117_ReUcle_user-service \
+            -Dsonar.organization=moaz1117 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.qualitygate.wait=true
+
+  build-and-push:
+    name: Build & Push Docker Images
+    needs: test-and-sonar
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        # add each new service folder name here
-        service: [bin-service, notification-service, analytics-service, user-service, collection-service, fleet-service, material-service, inventory-service, reward-service, payment-service, shop-service, marketplace-service]
+        service:
+          - user-service
+          - bin-service
+          - collection-service
+          - fleet-service
+          - material-service
+          - inventory-service
+          - reward-service
+          - payment-service
+          - shop-service
+          - marketplace-service
+          - analytics-service
+          - notification-service
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Unit tests
-        working-directory: services/${{ matrix.service }}
-        run: |
-          npm install
-          npm test
-
-      - name: Lowercase owner (GHCR names must be lowercase)
-        run: echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
-
-      - uses: docker/setup-buildx-action@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Image metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ env.OWNER }}/reucle-${{ matrix.service }}
-          tags: |
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build (and push on main)
-        uses: docker/build-push-action@v6
+      - name: Build and push ${{ matrix.service }}
+        uses: docker/build-push-action@v5
         with:
           context: ./services/${{ matrix.service }}
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          push: true
+          tags: ghcr.io/moaz1117/reucle-${{ matrix.service }}:sha-${{ github.sha }}
