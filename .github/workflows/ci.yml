@@ -42,25 +42,27 @@ jobs:
           cache: maven
           cache-dependency-path: services/*/pom.xml
 
-      - name: Run JUnit Tests & JaCoCo for ${{ matrix.service }}
+      - name: Build, Test & Generate JaCoCo (${{ matrix.service }})
         run: |
           POM_PATH="services/${{ matrix.service }}/pom.xml"
           if [ -f "$POM_PATH" ]; then
             mvn -f "$POM_PATH" clean test jacoco:report -DfailIfNoTests=false
           else
-            echo "No pom.xml found for ${{ matrix.service }}, skipping Maven test."
+            echo "No pom.xml found for ${{ matrix.service }}, skipping Maven build."
           fi
 
-      - name: Upload JaCoCo Report (${{ matrix.service }})
+      - name: Upload Build & Coverage Artifacts (${{ matrix.service }})
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jacoco-${{ matrix.service }}
-          path: services/${{ matrix.service }}/target/site/jacoco/
+          name: build-${{ matrix.service }}
+          path: |
+            services/${{ matrix.service }}/target/classes/
+            services/${{ matrix.service }}/target/site/jacoco/
           if-no-files-found: ignore
 
   sonar-analysis:
-    name: SonarQube Scan & Quality Gate
+    name: SonarQube Scan & Quality Gate (All Services)
     needs: test-all-services
     runs-on: ubuntu-latest
     steps:
@@ -69,44 +71,64 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Download All Service Build & Coverage Artifacts
+        uses: actions/download-artifact@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-          cache-dependency-path: services/*/pom.xml
+          pattern: build-*
+          merge-multiple: true
 
-      - name: Run Tests & JaCoCo for Sonar-Scanned Services
+      - name: Collect Source, Binary & Coverage Paths Across All Services
+        id: sonar-paths
         run: |
-          mvn -f services/bin-service/pom.xml clean test jacoco:report -DfailIfNoTests=false
-          mvn -f services/user-service/pom.xml clean test jacoco:report -DfailIfNoTests=false
+          SOURCES=""
+          TESTS=""
+          BINARIES=""
+          JACOCO=""
 
-      - name: SonarQube Scan & Quality Gate
+          for svc in services/*; do
+            [ -d "$svc" ] || continue
+
+            if [ -d "$svc/src/main" ]; then
+              SOURCES="${SOURCES:+$SOURCES,}$svc/src/main"
+            elif [ -d "$svc/src" ]; then
+              SOURCES="${SOURCES:+$SOURCES,}$svc/src"
+            fi
+
+            if [ -d "$svc/src/test" ]; then
+              TESTS="${TESTS:+$TESTS,}$svc/src/test"
+            fi
+
+            if [ -d "$svc/target/classes" ]; then
+              BINARIES="${BINARIES:+$BINARIES,}$svc/target/classes"
+            fi
+
+            if [ -f "$svc/target/site/jacoco/jacoco.xml" ]; then
+              JACOCO="${JACOCO:+$JACOCO,}$svc/target/site/jacoco/jacoco.xml"
+            fi
+          done
+
+          echo "sources=$SOURCES" >> "$GITHUB_OUTPUT"
+          echo "tests=$TESTS" >> "$GITHUB_OUTPUT"
+          echo "binaries=$BINARIES" >> "$GITHUB_OUTPUT"
+          echo "jacoco=$JACOCO" >> "$GITHUB_OUTPUT"
+
+          echo "Detected sources: $SOURCES"
+          echo "Detected tests: $TESTS"
+          echo "Detected binaries: $BINARIES"
+          echo "Detected jacoco: $JACOCO"
+
+      - name: SonarQube Cloud Scan & Quality Gate
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          if [ -z "$SONAR_TOKEN" ]; then
-            echo "SONAR_TOKEN is empty! Add SONAR_TOKEN under Settings > Secrets and variables > Actions."
-            exit 1
-          fi
-
-          mvn -f services/bin-service/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:5.9.0.7382:sonar \
-            -Dsonar.projectKey=Moaz1117_ReUcle_bin-service \
-            -Dsonar.organization=moaz1117 \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.sources=src \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.scanner.skipJreProvisioning=true \
-            -Dsonar.qualitygate.wait=true
-
-          mvn -f services/user-service/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:5.9.0.7382:sonar \
-            -Dsonar.projectKey=Moaz1117_ReUcle_user-service \
-            -Dsonar.organization=moaz1117 \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.sources=src \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.scanner.skipJreProvisioning=true \
+        with:
+          args: >
+            -Dsonar.projectKey=Moaz1117_ReUcle
+            -Dsonar.organization=moaz1117
+            -Dsonar.sources=${{ steps.sonar-paths.outputs.sources }}
+            -Dsonar.tests=${{ steps.sonar-paths.outputs.tests }}
+            -Dsonar.java.binaries=${{ steps.sonar-paths.outputs.binaries }}
+            -Dsonar.coverage.jacoco.xmlReportPaths=${{ steps.sonar-paths.outputs.jacoco }}
             -Dsonar.qualitygate.wait=true
 
   build-and-push:
