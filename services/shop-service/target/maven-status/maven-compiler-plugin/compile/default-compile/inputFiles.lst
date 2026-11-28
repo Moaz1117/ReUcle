@@ -1,0 +1,5 @@
+/workspace/shop-service/src/main/java/com/reucle/shop/client/IRewardClient.java
+/workspace/shop-service/src/main/java/com/reucle/shop/model/Order.java
+/workspace/shop-service/src/main/java/com/reucle/shop/model/ShopItem.java
+/workspace/shop-service/src/main/java/com/reucle/shop/repository/IShopRepository.java
+/workspace/shop-service/src/main/java/com/reucle/shop/service/ShopManager.java

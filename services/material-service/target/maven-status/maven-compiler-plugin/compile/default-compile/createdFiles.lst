@@ -1,0 +1,3 @@
+com/reucle/material/model/Material.class
+com/reucle/material/repository/IMaterialRepository.class
+com/reucle/material/service/MaterialService.class

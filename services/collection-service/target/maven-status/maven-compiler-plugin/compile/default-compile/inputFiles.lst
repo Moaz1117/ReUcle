@@ -1,0 +1,6 @@
+/workspace/collection-service/src/main/java/edu/aiu/reucle/collection/CollectionService.java
+/workspace/collection-service/src/main/java/edu/aiu/reucle/collection/client/IFleetClient.java
+/workspace/collection-service/src/main/java/edu/aiu/reucle/collection/model/CollectionTask.java
+/workspace/collection-service/src/main/java/edu/aiu/reucle/collection/model/RoutePlan.java
+/workspace/collection-service/src/main/java/edu/aiu/reucle/collection/repository/ICollectionRepository.java
+/workspace/collection-service/src/main/java/edu/aiu/reucle/collection/service/CollectionManager.java

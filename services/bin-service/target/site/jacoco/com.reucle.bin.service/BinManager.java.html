@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BinManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bin-service</a> &gt; <a href="index.source.html" class="el_package">com.reucle.bin.service</a> &gt; <span class="el_source">BinManager.java</span></div><h1>BinManager.java</h1><pre class="source lang-java linenums">package com.reucle.bin.service;
+
+import java.util.List;
+import com.reucle.bin.adapter.ISensorGW;
+import com.reucle.bin.api.IBin;
+import com.reucle.bin.domain.BinStatus;
+import com.reucle.bin.domain.SensorReading;
+import com.reucle.bin.domain.SmartBin;
+import com.reucle.bin.dto.BinRegistrationData;
+import com.reucle.bin.dto.SensorData;
+import com.reucle.bin.exceptions.BinNotFoundException;
+import com.reucle.bin.exceptions.DeviceRegistrationException;
+import com.reucle.bin.repository.IBinRepository;
+
+public class BinManager implements IBin {
+    public static final float COLLECTION_THRESHOLD = 80.0f;
+
+    private final IBinRepository binRepo;
+    private final ISensorGW sensorGateway;
+
+<span class="fc" id="L21">    public BinManager(IBinRepository binRepo, ISensorGW sensorGateway) {</span>
+<span class="fc" id="L22">        this.binRepo = binRepo;</span>
+<span class="fc" id="L23">        this.sensorGateway = sensorGateway;</span>
+<span class="fc" id="L24">    }</span>
+
+    public void processIncomingReading() {
+<span class="fc" id="L27">        SensorData data1 = sensorGateway.receiveReading();</span>
+<span class="fc" id="L28">        SmartBin bin42 = binRepo.findById(data1.binId());</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (bin42 == null) {</span>
+<span class="fc" id="L30">            throw new BinNotFoundException(&quot;Bin not found: &quot; + data1.binId());</span>
+        }
+<span class="fc" id="L32">        bin42.updateReading(data1.fillLevel(), data1.composition());</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (bin42.checkThreshold(COLLECTION_THRESHOLD)) {</span>
+<span class="fc" id="L34">            bin42.markNeedsCollection();</span>
+        }
+<span class="fc" id="L36">        binRepo.save(bin42);</span>
+<span class="fc" id="L37">    }</span>
+
+    @Override
+    public void registerBin(BinRegistrationData data) {
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (!sensorGateway.registerDevice()) {</span>
+<span class="fc" id="L42">            throw new DeviceRegistrationException(&quot;Failed to register device: &quot; + data.binId());</span>
+        }
+<span class="fc" id="L44">        SmartBin bin = new SmartBin(data.binId(), data.customerId(), data.model());</span>
+<span class="fc" id="L45">        bin.activate();</span>
+<span class="fc" id="L46">        binRepo.save(bin);</span>
+<span class="fc" id="L47">    }</span>
+
+    @Override
+    public BinStatus getBinStatus(String binId) {
+<span class="fc" id="L51">        SmartBin bin = binRepo.findById(binId);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (bin == null) {</span>
+<span class="fc" id="L53">            throw new BinNotFoundException(&quot;Bin not found: &quot; + binId);</span>
+        }
+<span class="fc" id="L55">        return bin.getStatus();</span>
+    }
+
+    @Override
+    public List&lt;SmartBin&gt; getBinsNeedingCollection() {
+<span class="fc" id="L60">        return binRepo.findNeedingCollection(COLLECTION_THRESHOLD);</span>
+    }
+
+    @Override
+    public List&lt;SensorReading&gt; getFillHistory(String binId) {
+<span class="fc" id="L65">        SmartBin bin = binRepo.findById(binId);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (bin == null) {</span>
+<span class="fc" id="L67">            throw new BinNotFoundException(&quot;Bin not found: &quot; + binId);</span>
+        }
+<span class="fc" id="L69">        return bin.getReadings();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

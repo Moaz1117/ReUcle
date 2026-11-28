@@ -1,0 +1,4 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+inventory-service,com.reucle.inventory.model,InventoryItem.InventoryStatus,0,21,0,0,0,2,0,1,0,1
+inventory-service,com.reucle.inventory.model,InventoryItem,30,88,8,8,6,22,9,7,2,6
+inventory-service,com.reucle.inventory.service,InventoryManager,10,57,0,0,1,13,2,5,2,5

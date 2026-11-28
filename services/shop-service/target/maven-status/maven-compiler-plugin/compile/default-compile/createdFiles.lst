@@ -1,0 +1,6 @@
+com/reucle/shop/model/ShopItem.class
+com/reucle/shop/client/IRewardClient.class
+com/reucle/shop/service/ShopManager.class
+com/reucle/shop/model/Order$OrderStatus.class
+com/reucle/shop/model/Order.class
+com/reucle/shop/repository/IShopRepository.class

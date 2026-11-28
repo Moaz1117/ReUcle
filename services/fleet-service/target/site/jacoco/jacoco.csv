@@ -1,0 +1,17 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+fleet-service,edu.aiu.reucle.fleet,FleetService.InvalidDriverShiftTransitionException,0,8,0,0,0,1,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet,FleetService.DriverShiftNotFoundException,5,0,0,0,1,0,1,0,1,0
+fleet-service,edu.aiu.reucle.fleet,FleetService,6,129,2,8,0,14,3,9,1,6
+fleet-service,edu.aiu.reucle.fleet,FleetService.DriverShiftStatus,0,21,0,0,0,1,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet,FleetService.ShiftOverlapException,0,5,0,0,0,1,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet,FleetService.InvalidVehicleTransitionException,0,8,0,0,0,1,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet,FleetService.VehicleStatus,0,27,0,0,0,1,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet,FleetService.DriverShift,0,82,0,10,0,9,0,13,0,8
+fleet-service,edu.aiu.reucle.fleet,FleetService.InvalidShiftTimeException,0,4,0,0,0,1,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet,FleetService.CreateDriverShiftCommand,0,27,0,0,0,1,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet,FleetService.Vehicle,41,80,6,22,4,9,7,15,4,4
+fleet-service,edu.aiu.reucle.fleet,FleetService.VehicleUnavailableException,0,5,0,0,0,1,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet.service,FleetManager,23,68,0,0,1,18,4,4,4,4
+fleet-service,edu.aiu.reucle.fleet.model,Vehicle,45,93,6,8,9,28,9,9,3,8
+fleet-service,edu.aiu.reucle.fleet.model,Vehicle.VehicleStatus,0,21,0,0,0,2,0,1,0,1
+fleet-service,edu.aiu.reucle.fleet.model,DriverAssignment,9,24,0,0,3,7,3,2,3,2

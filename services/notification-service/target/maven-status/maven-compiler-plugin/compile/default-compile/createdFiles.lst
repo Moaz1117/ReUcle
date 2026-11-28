@@ -1,0 +1,6 @@
+com/reucle/notification/service/NotificationService.class
+com/reucle/notification/repository/INotificationRepository.class
+com/reucle/notification/sender/INotificationSender.class
+com/reucle/notification/model/Notification$Channel.class
+com/reucle/notification/model/Notification.class
+com/reucle/notification/model/Notification$NotificationStatus.class

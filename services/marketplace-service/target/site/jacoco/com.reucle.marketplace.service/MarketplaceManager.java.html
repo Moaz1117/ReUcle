@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MarketplaceManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">marketplace-service</a> &gt; <a href="index.source.html" class="el_package">com.reucle.marketplace.service</a> &gt; <span class="el_source">MarketplaceManager.java</span></div><h1>MarketplaceManager.java</h1><pre class="source lang-java linenums">package com.reucle.marketplace.service;
+
+import com.reucle.marketplace.model.Listing;
+import com.reucle.marketplace.repository.IListingRepository;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+// PM2: marketplace-service Class/Collaboration/Sequence Diagram -&gt; MarketplaceManager
+public class MarketplaceManager {
+    private final IListingRepository repository;
+
+<span class="fc" id="L13">    public MarketplaceManager(IListingRepository repository) {</span>
+<span class="fc" id="L14">        this.repository = repository;</span>
+<span class="fc" id="L15">    }</span>
+
+    // PM2: marketplace-service Sequence (Create Listing) -&gt; MarketplaceManager.createListing
+    public Listing createListing(String sellerId, String materialId, double quantityKg, double pricePerKg) {
+<span class="fc" id="L19">        Listing listing = new Listing(UUID.randomUUID().toString(), sellerId, materialId, quantityKg, pricePerKg);</span>
+<span class="fc" id="L20">        return repository.save(listing);</span>
+    }
+
+    // PM2: marketplace-service Sequence (Reserve Listing) -&gt; MarketplaceManager.reserveListing
+    public Listing reserveListing(String listingId, String buyerId) {
+<span class="nc" id="L25">        Listing listing = repository.findById(listingId)</span>
+<span class="nc" id="L26">                .orElseThrow(() -&gt; new NoSuchElementException(&quot;Listing not found: &quot; + listingId));</span>
+<span class="nc" id="L27">        listing.reserve(buyerId);</span>
+<span class="nc" id="L28">        return repository.save(listing);</span>
+    }
+
+    // PM2: marketplace-service Sequence (Complete Order) -&gt; MarketplaceManager.completePurchase
+    public Listing completePurchase(String listingId) {
+<span class="fc" id="L33">        Listing listing = repository.findById(listingId)</span>
+<span class="pc" id="L34">                .orElseThrow(() -&gt; new NoSuchElementException(&quot;Listing not found: &quot; + listingId));</span>
+<span class="fc" id="L35">        listing.markSold();</span>
+<span class="fc" id="L36">        return repository.save(listing);</span>
+    }
+
+    public List&lt;Listing&gt; getActiveListings() {
+<span class="nc" id="L40">        return repository.findByStatus(Listing.ListingStatus.ACTIVE);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

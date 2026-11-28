@@ -1,0 +1,5 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+notification-service,com.reucle.notification.service,NotificationService,0,40,0,2,0,11,0,3,0,2
+notification-service,com.reucle.notification.model,Notification,31,48,2,2,7,15,7,4,5,4
+notification-service,com.reucle.notification.model,Notification.NotificationStatus,0,21,0,0,0,2,0,1,0,1
+notification-service,com.reucle.notification.model,Notification.Channel,0,21,0,0,0,2,0,1,0,1

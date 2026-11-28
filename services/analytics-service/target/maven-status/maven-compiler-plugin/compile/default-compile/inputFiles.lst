@@ -1,0 +1,5 @@
+/workspace/analytics-service/src/main/java/com/reucle/analytics/client/BinClient.java
+/workspace/analytics-service/src/main/java/com/reucle/analytics/engine/PredictionEngine.java
+/workspace/analytics-service/src/main/java/com/reucle/analytics/model/BinPrediction.java
+/workspace/analytics-service/src/main/java/com/reucle/analytics/model/Reading.java
+/workspace/analytics-service/src/main/java/com/reucle/analytics/service/AnalyticsService.java

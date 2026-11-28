@@ -1,0 +1,5 @@
+/workspace/reward-service/src/main/java/com/reucle/reward/model/RewardTransaction.java
+/workspace/reward-service/src/main/java/com/reucle/reward/model/Wallet.java
+/workspace/reward-service/src/main/java/com/reucle/reward/repository/IWalletRepository.java
+/workspace/reward-service/src/main/java/com/reucle/reward/service/RewardCalculator.java
+/workspace/reward-service/src/main/java/com/reucle/reward/service/RewardManager.java

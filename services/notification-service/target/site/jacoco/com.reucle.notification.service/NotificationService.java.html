@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">notification-service</a> &gt; <a href="index.source.html" class="el_package">com.reucle.notification.service</a> &gt; <span class="el_source">NotificationService.java</span></div><h1>NotificationService.java</h1><pre class="source lang-java linenums">package com.reucle.notification.service;
+
+import com.reucle.notification.model.Notification;
+import com.reucle.notification.repository.INotificationRepository;
+import com.reucle.notification.sender.INotificationSender;
+import java.util.UUID;
+
+// PM2: notification-service Class/Collaboration/Sequence Diagram -&gt; NotificationService
+public class NotificationService {
+    private final INotificationRepository repository;
+    private final INotificationSender sender;
+
+<span class="fc" id="L13">    public NotificationService(INotificationRepository repository, INotificationSender sender) {</span>
+<span class="fc" id="L14">        this.repository = repository;</span>
+<span class="fc" id="L15">        this.sender = sender;</span>
+<span class="fc" id="L16">    }</span>
+
+    // PM2: notification-service Sequence (Dispatch Alert) -&gt; NotificationService.dispatchNotification
+    public Notification dispatchNotification(String recipientId, Notification.Channel channel, String message) {
+<span class="fc" id="L20">        Notification notification = new Notification(UUID.randomUUID().toString(), recipientId, channel, message);</span>
+<span class="fc" id="L21">        repository.save(notification);</span>
+
+<span class="fc" id="L23">        boolean delivered = sender.send(notification);</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        if (delivered) {</span>
+<span class="fc" id="L25">            notification.markSent();</span>
+        } else {
+<span class="fc" id="L27">            notification.markFailed();</span>
+        }
+<span class="fc" id="L29">        return repository.save(notification);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

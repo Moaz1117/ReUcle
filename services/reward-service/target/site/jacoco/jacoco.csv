@@ -1,0 +1,6 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+reward-service,com.reucle.reward.service,RewardManager,37,54,0,0,7,12,2,3,2,3
+reward-service,com.reucle.reward.service,RewardCalculator,5,15,2,2,1,3,2,2,0,2
+reward-service,com.reucle.reward.model,Wallet,39,37,6,2,9,11,6,4,2,4
+reward-service,com.reucle.reward.model,RewardTransaction,9,30,0,0,3,9,3,3,3,3
+reward-service,com.reucle.reward.model,RewardTransaction.TransactionType,0,15,0,0,0,1,0,1,0,1

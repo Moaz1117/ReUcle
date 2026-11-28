@@ -1,0 +1,17 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+collection-service,edu.aiu.reucle.collection.model,RoutePlan,8,29,2,2,2,8,3,3,1,3
+collection-service,edu.aiu.reucle.collection.model,CollectionTask,47,75,7,5,9,23,8,9,3,8
+collection-service,edu.aiu.reucle.collection.model,CollectionTask.TaskStatus,0,33,0,0,0,2,0,1,0,1
+collection-service,edu.aiu.reucle.collection,CollectionService.RoutePlanCommand,0,27,0,0,0,1,0,1,0,1
+collection-service,edu.aiu.reucle.collection,CollectionService.RequestStatus,0,33,0,0,0,1,0,1,0,1
+collection-service,edu.aiu.reucle.collection,CollectionService,26,288,4,20,0,39,4,13,0,5
+collection-service,edu.aiu.reucle.collection,CollectionService.CollectionRequest,34,104,4,16,6,17,8,17,6,9
+collection-service,edu.aiu.reucle.collection,CollectionService.MapsGatewayException,5,0,0,0,1,0,1,0,1,0
+collection-service,edu.aiu.reucle.collection,CollectionService.CreateRequestsResult,0,15,0,0,0,1,0,1,0,1
+collection-service,edu.aiu.reucle.collection,CollectionService.BinGatewayException,5,0,0,0,1,0,1,0,1,0
+collection-service,edu.aiu.reucle.collection,CollectionService.RouteStop,0,18,0,0,0,1,0,1,0,1
+collection-service,edu.aiu.reucle.collection,CollectionService.Route,0,18,0,0,0,1,0,1,0,1
+collection-service,edu.aiu.reucle.collection,CollectionService.InvalidCollectionRequestTransitionException,0,8,0,0,0,1,0,1,0,1
+collection-service,edu.aiu.reucle.collection,CollectionService.BinCandidate,5,32,2,2,0,4,2,1,0,1
+collection-service,edu.aiu.reucle.collection,CollectionService.Location,0,15,0,0,0,1,0,1,0,1
+collection-service,edu.aiu.reucle.collection.service,CollectionManager,18,78,1,1,1,19,3,5,2,5
