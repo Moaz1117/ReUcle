@@ -86,19 +86,27 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -f services/bin-service/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN is empty! Add SONAR_TOKEN under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+          mvn -f services/bin-service/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:5.9.0.7382:sonar \
             -Dsonar.projectKey=Moaz1117_ReUcle_bin-service \
             -Dsonar.organization=moaz1117 \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.sources=src \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.scanner.skipJreProvisioning=true \
             -Dsonar.qualitygate.wait=true
-          mvn -f services/user-service/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+
+          mvn -f services/user-service/pom.xml org.sonarsource.scanner.maven:sonar-maven-plugin:5.9.0.7382:sonar \
             -Dsonar.projectKey=Moaz1117_ReUcle_user-service \
             -Dsonar.organization=moaz1117 \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.sources=src \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.scanner.skipJreProvisioning=true \
             -Dsonar.qualitygate.wait=true
 
   build-and-push:
