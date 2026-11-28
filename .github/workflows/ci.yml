@@ -123,7 +123,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=Moaz1117_ReUcle
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.projectKey=moaz1117_reucle
             -Dsonar.organization=moaz1117
             -Dsonar.sources=${{ steps.sonar-paths.outputs.sources }}
             -Dsonar.tests=${{ steps.sonar-paths.outputs.tests }}
