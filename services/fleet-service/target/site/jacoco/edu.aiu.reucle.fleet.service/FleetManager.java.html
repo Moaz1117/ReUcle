@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FleetManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fleet-service</a> &gt; <a href="index.source.html" class="el_package">edu.aiu.reucle.fleet.service</a> &gt; <span class="el_source">FleetManager.java</span></div><h1>FleetManager.java</h1><pre class="source lang-java linenums">package edu.aiu.reucle.fleet.service;
+
+import edu.aiu.reucle.fleet.model.DriverAssignment;
+import edu.aiu.reucle.fleet.model.Vehicle;
+import edu.aiu.reucle.fleet.repository.IVehicleRepository;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+// PM2: fleet-service Class/Collaboration/Sequence Diagram -&gt; FleetManager
+public class FleetManager {
+    private final IVehicleRepository repository;
+
+<span class="fc" id="L14">    public FleetManager(IVehicleRepository repository) {</span>
+<span class="fc" id="L15">        this.repository = repository;</span>
+<span class="fc" id="L16">    }</span>
+
+    // PM2: fleet-service Collaboration/Sequence (Assign &amp; Dispatch) -&gt; FleetManager.assignDriverAndDispatch
+    public DriverAssignment assignDriverAndDispatch(String vehicleId, String driverId) {
+<span class="fc" id="L20">        Vehicle vehicle = repository.findById(vehicleId)</span>
+<span class="pc" id="L21">                .orElseThrow(() -&gt; new NoSuchElementException(&quot;Vehicle not found: &quot; + vehicleId));</span>
+
+<span class="fc" id="L23">        vehicle.dispatch();</span>
+<span class="fc" id="L24">        repository.save(vehicle);</span>
+
+<span class="fc" id="L26">        DriverAssignment assignment = new DriverAssignment(</span>
+<span class="fc" id="L27">                UUID.randomUUID().toString(),</span>
+                vehicleId,
+                driverId
+        );
+<span class="fc" id="L31">        return repository.saveAssignment(assignment);</span>
+    }
+
+    // PM2: fleet-service Sequence (Record Pickup Load) -&gt; FleetManager.recordVehicleLoad
+    public Vehicle recordVehicleLoad(String vehicleId, double weightKg) {
+<span class="fc" id="L36">        Vehicle vehicle = repository.findById(vehicleId)</span>
+<span class="pc" id="L37">                .orElseThrow(() -&gt; new NoSuchElementException(&quot;Vehicle not found: &quot; + vehicleId));</span>
+
+<span class="fc" id="L39">        vehicle.loadWaste(weightKg);</span>
+<span class="fc" id="L40">        return repository.save(vehicle);</span>
+    }
+
+    // PM2: fleet-service Sequence (Complete Route) -&gt; FleetManager.completeRouteAndReturn
+    public Vehicle completeRouteAndReturn(String vehicleId) {
+<span class="fc" id="L45">        Vehicle vehicle = repository.findById(vehicleId)</span>
+<span class="pc" id="L46">                .orElseThrow(() -&gt; new NoSuchElementException(&quot;Vehicle not found: &quot; + vehicleId));</span>
+
+<span class="fc" id="L48">        vehicle.returnToDepot();</span>
+<span class="fc" id="L49">        return repository.save(vehicle);</span>
+    }
+
+    public List&lt;Vehicle&gt; getAvailableVehicles() {
+<span class="nc" id="L53">        return repository.findByStatus(Vehicle.VehicleStatus.AVAILABLE);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

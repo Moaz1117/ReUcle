@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CollectionTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">collection-service</a> &gt; <a href="index.source.html" class="el_package">edu.aiu.reucle.collection.model</a> &gt; <span class="el_source">CollectionTask.java</span></div><h1>CollectionTask.java</h1><pre class="source lang-java linenums">package edu.aiu.reucle.collection.model;
+
+import java.time.Instant;
+import java.util.Objects;
+
+// PM2: collection-service Class &amp; State Diagram -&gt; CollectionTask
+// States: SCHEDULED -&gt; ASSIGNED -&gt; IN_PROGRESS -&gt; COMPLETED | CANCELLED
+public class CollectionTask {
+<span class="fc" id="L9">    public enum TaskStatus {</span>
+<span class="fc" id="L10">        SCHEDULED, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED</span>
+    }
+
+    private final String taskId;
+    private final String binId;
+    private String assignedVehicleId;
+    private double collectedWeightKg;
+    private TaskStatus status;
+    private final Instant scheduledAt;
+
+<span class="fc" id="L20">    public CollectionTask(String taskId, String binId) {</span>
+<span class="fc" id="L21">        this.taskId = Objects.requireNonNull(taskId);</span>
+<span class="fc" id="L22">        this.binId = Objects.requireNonNull(binId);</span>
+<span class="fc" id="L23">        this.status = TaskStatus.SCHEDULED;</span>
+<span class="fc" id="L24">        this.scheduledAt = Instant.now();</span>
+<span class="fc" id="L25">    }</span>
+
+    // State Transition: [SCHEDULED] --(assignVehicle)--&gt; [ASSIGNED]
+    public void assignVehicle(String vehicleId) {
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        if (this.status != TaskStatus.SCHEDULED) {</span>
+<span class="nc" id="L30">            throw new IllegalStateException(&quot;Cannot assign vehicle when task is in state: &quot; + status);</span>
+        }
+<span class="fc" id="L32">        this.assignedVehicleId = Objects.requireNonNull(vehicleId);</span>
+<span class="fc" id="L33">        this.status = TaskStatus.ASSIGNED;</span>
+<span class="fc" id="L34">    }</span>
+
+    // State Transition: [ASSIGNED] --(startCollection)--&gt; [IN_PROGRESS]
+    public void start() {
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (this.status != TaskStatus.ASSIGNED) {</span>
+<span class="nc" id="L39">            throw new IllegalStateException(&quot;Cannot start task in state: &quot; + status);</span>
+        }
+<span class="fc" id="L41">        this.status = TaskStatus.IN_PROGRESS;</span>
+<span class="fc" id="L42">    }</span>
+
+    // State Transition: [IN_PROGRESS] --(completePickup)--&gt; [COMPLETED]
+    public void complete(double weightKg) {
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (this.status != TaskStatus.IN_PROGRESS) {</span>
+<span class="fc" id="L47">            throw new IllegalStateException(&quot;Cannot complete task in state: &quot; + status);</span>
+        }
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (weightKg &lt;= 0) {</span>
+<span class="nc" id="L50">            throw new IllegalArgumentException(&quot;Collected weight must be positive&quot;);</span>
+        }
+<span class="fc" id="L52">        this.collectedWeightKg = weightKg;</span>
+<span class="fc" id="L53">        this.status = TaskStatus.COMPLETED;</span>
+<span class="fc" id="L54">    }</span>
+
+    // State Transition: [SCHEDULED | ASSIGNED] --(cancel)--&gt; [CANCELLED]
+    public void cancel() {
+<span class="nc bnc" id="L58" title="All 4 branches missed.">        if (this.status == TaskStatus.COMPLETED || this.status == TaskStatus.IN_PROGRESS) {</span>
+<span class="nc" id="L59">            throw new IllegalStateException(&quot;Cannot cancel task in state: &quot; + status);</span>
+        }
+<span class="nc" id="L61">        this.status = TaskStatus.CANCELLED;</span>
+<span class="nc" id="L62">    }</span>
+
+<span class="nc" id="L64">    public String getTaskId() { return taskId; }</span>
+<span class="fc" id="L65">    public String getBinId() { return binId; }</span>
+<span class="fc" id="L66">    public String getAssignedVehicleId() { return assignedVehicleId; }</span>
+<span class="fc" id="L67">    public double getCollectedWeightKg() { return collectedWeightKg; }</span>
+<span class="fc" id="L68">    public TaskStatus getStatus() { return status; }</span>
+<span class="nc" id="L69">    public Instant getScheduledAt() { return scheduledAt; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

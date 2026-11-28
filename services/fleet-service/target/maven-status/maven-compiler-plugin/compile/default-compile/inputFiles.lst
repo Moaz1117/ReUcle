@@ -1,0 +1,5 @@
+/workspace/fleet-service/src/main/java/edu/aiu/reucle/fleet/FleetService.java
+/workspace/fleet-service/src/main/java/edu/aiu/reucle/fleet/model/DriverAssignment.java
+/workspace/fleet-service/src/main/java/edu/aiu/reucle/fleet/model/Vehicle.java
+/workspace/fleet-service/src/main/java/edu/aiu/reucle/fleet/repository/IVehicleRepository.java
+/workspace/fleet-service/src/main/java/edu/aiu/reucle/fleet/service/FleetManager.java

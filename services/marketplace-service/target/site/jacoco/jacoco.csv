@@ -1,0 +1,4 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+marketplace-service,com.reucle.marketplace.model,Listing,41,76,5,5,11,20,10,7,6,6
+marketplace-service,com.reucle.marketplace.model,Listing.ListingStatus,0,27,0,0,0,2,0,1,0,1
+marketplace-service,com.reucle.marketplace.service,MarketplaceManager,34,37,0,0,5,9,4,3,4,3

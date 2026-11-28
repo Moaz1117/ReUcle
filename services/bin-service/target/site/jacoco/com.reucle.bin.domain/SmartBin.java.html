@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SmartBin.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bin-service</a> &gt; <a href="index.source.html" class="el_package">com.reucle.bin.domain</a> &gt; <span class="el_source">SmartBin.java</span></div><h1>SmartBin.java</h1><pre class="source lang-java linenums">package com.reucle.bin.domain;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import com.reucle.bin.exceptions.InvalidBinStateTransitionException;
+import com.reucle.bin.exceptions.InvalidReadingException;
+
+public class SmartBin {
+    private String binId;
+    private String customerId;
+    private String model;
+    private float currentFillLevel;
+    private BinStatus status;
+<span class="fc" id="L16">    private final List&lt;SensorReading&gt; readings = new ArrayList&lt;&gt;();</span>
+    private WasteComposition composition;
+
+<span class="fc" id="L19">    public SmartBin(String binId, String customerId, String model) {</span>
+<span class="fc" id="L20">        this.binId = binId;</span>
+<span class="fc" id="L21">        this.customerId = customerId;</span>
+<span class="fc" id="L22">        this.model = model;</span>
+<span class="fc" id="L23">        this.currentFillLevel = 0.0f;</span>
+<span class="fc" id="L24">        this.status = BinStatus.UNREGISTERED;</span>
+<span class="fc" id="L25">    }</span>
+
+<span class="fc" id="L27">    public SmartBin(String binId, String customerId, String model, float currentFillLevel, BinStatus status) {</span>
+<span class="fc" id="L28">        this.binId = binId;</span>
+<span class="fc" id="L29">        this.customerId = customerId;</span>
+<span class="fc" id="L30">        this.model = model;</span>
+<span class="fc" id="L31">        this.currentFillLevel = currentFillLevel;</span>
+<span class="fc" id="L32">        this.status = status;</span>
+<span class="fc" id="L33">    }</span>
+
+    public void activate() {
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        if (this.status != BinStatus.UNREGISTERED) {</span>
+<span class="fc" id="L37">            throw new InvalidBinStateTransitionException(</span>
+                &quot;activate() only allowed from UNREGISTERED; current: &quot; + this.status
+            );
+        }
+<span class="fc" id="L41">        this.status = BinStatus.ACTIVE;</span>
+<span class="fc" id="L42">    }</span>
+
+    public void updateReading(float fill, WasteComposition composition) {
+<span class="fc bfc" id="L45" title="All 4 branches covered.">        if (this.status == BinStatus.UNREGISTERED || this.status == BinStatus.RETIRED) {</span>
+<span class="fc" id="L46">            throw new InvalidBinStateTransitionException(</span>
+                &quot;Cannot update reading in state: &quot; + this.status
+            );
+        }
+<span class="fc bfc" id="L50" title="All 4 branches covered.">        if (fill &lt; 0.0f || fill &gt; 100.0f) {</span>
+<span class="fc" id="L51">            throw new InvalidReadingException(&quot;Fill level must be in [0, 100], got: &quot; + fill);</span>
+        }
+<span class="fc" id="L53">        this.currentFillLevel = fill;</span>
+<span class="fc" id="L54">        this.composition = composition;</span>
+<span class="fc" id="L55">        this.readings.add(new SensorReading(Instant.now(), fill));</span>
+<span class="fc" id="L56">    }</span>
+
+    public boolean checkThreshold(float threshold) {
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        return this.currentFillLevel &gt;= threshold;</span>
+    }
+
+    public void markNeedsCollection() {
+<span class="pc bpc" id="L63" title="1 of 4 branches missed.">        if (this.status != BinStatus.ACTIVE &amp;&amp; this.status != BinStatus.OFFLINE) {</span>
+<span class="fc" id="L64">            throw new InvalidBinStateTransitionException(</span>
+                &quot;Cannot markNeedsCollection() from state: &quot; + this.status
+            );
+        }
+<span class="fc" id="L68">        this.status = BinStatus.NEEDS_COLLECTION;</span>
+<span class="fc" id="L69">    }</span>
+
+    public void resolveCollection() {
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (this.status != BinStatus.NEEDS_COLLECTION) {</span>
+<span class="fc" id="L73">            throw new InvalidBinStateTransitionException(</span>
+                &quot;resolveCollection() only allowed from NEEDS_COLLECTION; current: &quot; + this.status
+            );
+        }
+<span class="fc" id="L77">        this.currentFillLevel = 0.0f;</span>
+<span class="fc" id="L78">        this.status = BinStatus.ACTIVE;</span>
+<span class="fc" id="L79">    }</span>
+
+    public void markOffline() {
+<span class="fc bfc" id="L82" title="All 4 branches covered.">        if (this.status == BinStatus.UNREGISTERED || this.status == BinStatus.RETIRED) {</span>
+<span class="fc" id="L83">            throw new InvalidBinStateTransitionException(</span>
+                &quot;Cannot markOffline() from state: &quot; + this.status
+            );
+        }
+<span class="fc" id="L87">        this.status = BinStatus.OFFLINE;</span>
+<span class="fc" id="L88">    }</span>
+
+    public void markOnline() {
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (this.status != BinStatus.OFFLINE) {</span>
+<span class="fc" id="L92">            throw new InvalidBinStateTransitionException(</span>
+                &quot;markOnline() only allowed from OFFLINE; current: &quot; + this.status
+            );
+        }
+<span class="fc" id="L96">        this.status = BinStatus.ACTIVE;</span>
+<span class="fc" id="L97">    }</span>
+
+    public void retire() {
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if (this.status == BinStatus.RETIRED) {</span>
+<span class="fc" id="L101">            throw new InvalidBinStateTransitionException(&quot;Bin is already RETIRED&quot;);</span>
+        }
+<span class="fc" id="L103">        this.status = BinStatus.RETIRED;</span>
+<span class="fc" id="L104">    }</span>
+
+    public void addReading(SensorReading reading) {
+<span class="fc" id="L107">        this.readings.add(reading);</span>
+<span class="fc" id="L108">    }</span>
+
+<span class="fc" id="L110">    public String getBinId() { return binId; }</span>
+<span class="nc" id="L111">    public String getCustomerId() { return customerId; }</span>
+<span class="nc" id="L112">    public String getModel() { return model; }</span>
+<span class="fc" id="L113">    public float getCurrentFillLevel() { return currentFillLevel; }</span>
+<span class="fc" id="L114">    public BinStatus getStatus() { return status; }</span>
+<span class="fc" id="L115">    public WasteComposition getComposition() { return composition; }</span>
+<span class="fc" id="L116">    public List&lt;SensorReading&gt; getReadings() { return Collections.unmodifiableList(readings); }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

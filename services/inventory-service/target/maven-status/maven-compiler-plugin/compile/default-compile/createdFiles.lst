@@ -1,0 +1,4 @@
+com/reucle/inventory/model/InventoryItem.class
+com/reucle/inventory/repository/IInventoryRepository.class
+com/reucle/inventory/model/InventoryItem$InventoryStatus.class
+com/reucle/inventory/service/InventoryManager.class

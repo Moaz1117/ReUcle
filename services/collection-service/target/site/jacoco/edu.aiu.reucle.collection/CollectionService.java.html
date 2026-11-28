@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CollectionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">collection-service</a> &gt; <a href="index.source.html" class="el_package">edu.aiu.reucle.collection</a> &gt; <span class="el_source">CollectionService.java</span></div><h1>CollectionService.java</h1><pre class="source lang-java linenums">package edu.aiu.reucle.collection;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
+
+/** Application service for FR5-FR6. Persistence and gateways are ports. */
+public final class CollectionService {
+<span class="fc" id="L16">    public enum RequestStatus { PENDING, ASSIGNED, COLLECTED, SKIPPED, DELIVERED }</span>
+
+    public record Location(String label, double latitude, double longitude) {
+<span class="fc" id="L19">        public Location { Objects.requireNonNull(label); }</span>
+    }
+
+    public record BinCandidate(String binId, double fillLevel, Location location, Instant observedAt) {
+<span class="fc" id="L23">        public BinCandidate {</span>
+<span class="fc" id="L24">            Objects.requireNonNull(binId); Objects.requireNonNull(location); Objects.requireNonNull(observedAt);</span>
+<span class="pc bpc" id="L25" title="2 of 4 branches missed.">            if (fillLevel &lt; 0 || fillLevel &gt; 100) throw new IllegalArgumentException(&quot;fillLevel must be 0..100&quot;);</span>
+<span class="fc" id="L26">        }</span>
+    }
+
+    public static final class CollectionRequest {
+        private final String requestId;
+        private final String binId;
+        private final double fillLevel;
+        private final Location location;
+        private final Instant createdAt;
+        private RequestStatus status;
+        private String vehicleId;
+        private String driverId;
+        private String skipReason;
+
+        public CollectionRequest(String requestId, String binId, double fillLevel, Location location,
+<span class="fc" id="L41">                                 Instant createdAt, RequestStatus status) {</span>
+<span class="fc" id="L42">            this.requestId = Objects.requireNonNull(requestId); this.binId = Objects.requireNonNull(binId);</span>
+<span class="fc" id="L43">            this.fillLevel = fillLevel; this.location = Objects.requireNonNull(location);</span>
+<span class="fc" id="L44">            this.createdAt = Objects.requireNonNull(createdAt); this.status = Objects.requireNonNull(status);</span>
+<span class="fc" id="L45">        }</span>
+        public void assign(String vehicleId, String driverId) {
+<span class="fc" id="L47">            transitionTo(RequestStatus.ASSIGNED); this.vehicleId = Objects.requireNonNull(vehicleId); this.driverId = Objects.requireNonNull(driverId);</span>
+<span class="fc" id="L48">        }</span>
+<span class="nc" id="L49">        public void markCollected() { transitionTo(RequestStatus.COLLECTED); }</span>
+<span class="nc bnc" id="L50" title="All 4 branches missed.">        public void markSkipped(String reason) { if (reason == null || reason.isBlank()) throw new IllegalArgumentException(&quot;skip reason is required&quot;); transitionTo(RequestStatus.SKIPPED); skipReason = reason; }</span>
+<span class="nc" id="L51">        public void markDelivered() { transitionTo(RequestStatus.DELIVERED); }</span>
+        public void transitionTo(RequestStatus next) {
+<span class="fc bfc" id="L53" title="All 14 branches covered.">            boolean allowed = (status == RequestStatus.PENDING &amp;&amp; next == RequestStatus.ASSIGNED)</span>
+                    || (status == RequestStatus.ASSIGNED &amp;&amp; (next == RequestStatus.COLLECTED || next == RequestStatus.SKIPPED))
+                    || (status == RequestStatus.COLLECTED &amp;&amp; next == RequestStatus.DELIVERED);
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            if (!allowed) throw new InvalidCollectionRequestTransitionException(status, next);</span>
+<span class="fc" id="L57">            status = next;</span>
+<span class="fc" id="L58">        }</span>
+<span class="fc" id="L59">        public String requestId() { return requestId; }</span>
+<span class="fc" id="L60">        public String binId() { return binId; }</span>
+<span class="nc" id="L61">        public double fillLevel() { return fillLevel; }</span>
+<span class="fc" id="L62">        public Location location() { return location; }</span>
+<span class="nc" id="L63">        public Instant createdAt() { return createdAt; }</span>
+<span class="fc" id="L64">        public RequestStatus status() { return status; }</span>
+<span class="fc" id="L65">        public String vehicleId() { return vehicleId; }</span>
+<span class="fc" id="L66">        public String driverId() { return driverId; }</span>
+<span class="nc" id="L67">        public String skipReason() { return skipReason; }</span>
+    }
+
+    public record RoutePlanCommand(String vehicleId, String driverId, LocalDate date, Location depot) {
+<span class="fc" id="L71">        public RoutePlanCommand { Objects.requireNonNull(vehicleId); Objects.requireNonNull(driverId); Objects.requireNonNull(date); Objects.requireNonNull(depot); }</span>
+    }
+<span class="fc" id="L73">    public record RouteStop(int orderIndex, String requestId, String binId, Location location, double fromPreviousKm) { }</span>
+    public record Route(String vehicleId, LocalDate date, List&lt;RouteStop&gt; stops, double totalDistanceKm) {
+<span class="fc" id="L75">        public Route { stops = List.copyOf(stops); }</span>
+    }
+    public record CreateRequestsResult(int createdCount, int duplicateCount, List&lt;String&gt; requestIds) {
+<span class="fc" id="L78">        public CreateRequestsResult { requestIds = List.copyOf(requestIds); }</span>
+    }
+
+    public interface IBin { List&lt;BinCandidate&gt; getBinsNeedingCollection(); }
+    public interface IMapsAPI { double[][] getDistanceMatrix(List&lt;Location&gt; locations); }
+    public interface ICollectionRepository {
+        Optional&lt;CollectionRequest&gt; findOpenByBinId(String binId);
+        List&lt;CollectionRequest&gt; findPending();
+        void save(CollectionRequest request);
+    }
+
+    public static class BinGatewayException extends RuntimeException {
+<span class="nc" id="L90">        public BinGatewayException(String message, Throwable cause) { super(message, cause); }</span>
+    }
+    public static class MapsGatewayException extends RuntimeException {
+<span class="nc" id="L93">        public MapsGatewayException(String message, Throwable cause) { super(message, cause); }</span>
+    }
+    public static class InvalidCollectionRequestTransitionException extends RuntimeException {
+<span class="fc" id="L96">        public InvalidCollectionRequestTransitionException(RequestStatus from, RequestStatus to) { super(&quot;Invalid collection request transition: &quot; + from + &quot; -&gt; &quot; + to); }</span>
+    }
+
+    private final IBin bin;
+    private final IMapsAPI maps;
+    private final ICollectionRepository repository;
+    private final Supplier&lt;String&gt; requestIdSupplier;
+    private final Supplier&lt;Instant&gt; clock;
+
+    public CollectionService(IBin bin, IMapsAPI maps, ICollectionRepository repository,
+<span class="fc" id="L106">                             Supplier&lt;String&gt; requestIdSupplier, Supplier&lt;Instant&gt; clock) {</span>
+<span class="fc" id="L107">        this.bin = Objects.requireNonNull(bin); this.maps = Objects.requireNonNull(maps);</span>
+<span class="fc" id="L108">        this.repository = Objects.requireNonNull(repository); this.requestIdSupplier = Objects.requireNonNull(requestIdSupplier);</span>
+<span class="fc" id="L109">        this.clock = Objects.requireNonNull(clock);</span>
+<span class="fc" id="L110">    }</span>
+
+    public CreateRequestsResult createAutomaticRequests() {
+        final List&lt;BinCandidate&gt; candidates;
+<span class="fc" id="L114">        try { candidates = bin.getBinsNeedingCollection(); }</span>
+<span class="pc" id="L115">        catch (RuntimeException e) { throw new BinGatewayException(&quot;Could not read collection candidates&quot;, e); }</span>
+<span class="fc" id="L116">        int created = 0, duplicates = 0; List&lt;String&gt; ids = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (BinCandidate candidate : candidates) {</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            if (repository.findOpenByBinId(candidate.binId()).isPresent()) { duplicates++; continue; }</span>
+<span class="fc" id="L119">            CollectionRequest request = new CollectionRequest(requestIdSupplier.get(), candidate.binId(), candidate.fillLevel(),</span>
+<span class="fc" id="L120">                    candidate.location(), clock.get(), RequestStatus.PENDING);</span>
+<span class="fc" id="L121">            repository.save(request); ids.add(request.requestId()); created++;</span>
+<span class="fc" id="L122">        }</span>
+<span class="fc" id="L123">        return new CreateRequestsResult(created, duplicates, ids);</span>
+    }
+
+    public Route createOptimizedRoute(RoutePlanCommand command) {
+<span class="fc" id="L127">        createAutomaticRequests();</span>
+<span class="fc" id="L128">        List&lt;CollectionRequest&gt; pending = repository.findPending();</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (pending.isEmpty()) return new Route(command.vehicleId(), command.date(), List.of(), 0.0);</span>
+<span class="fc" id="L130">        pending = new ArrayList&lt;&gt;(pending);</span>
+<span class="fc" id="L131">        List&lt;Location&gt; locations = new ArrayList&lt;&gt;(); locations.add(command.depot());</span>
+<span class="fc" id="L132">        pending.forEach(r -&gt; locations.add(r.location()));</span>
+        final double[][] distances;
+<span class="fc" id="L134">        try { distances = maps.getDistanceMatrix(List.copyOf(locations)); }</span>
+<span class="pc" id="L135">        catch (RuntimeException e) { throw new MapsGatewayException(&quot;Could not obtain road distances&quot;, e); }</span>
+<span class="fc" id="L136">        validateMatrix(distances, locations.size());</span>
+
+<span class="fc" id="L138">        List&lt;RouteStop&gt; stops = new ArrayList&lt;&gt;(); Set&lt;Integer&gt; visited = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L139">        int current = 0; double total = 0;</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        for (int order = 1; order &lt;= pending.size(); order++) {</span>
+<span class="fc" id="L141">            int next = -1; double best = Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">            for (int matrixIndex = 1; matrixIndex &lt; locations.size(); matrixIndex++) {</span>
+<span class="fc bfc" id="L143" title="All 4 branches covered.">                if (!visited.contains(matrixIndex) &amp;&amp; distances[current][matrixIndex] &lt; best) {</span>
+<span class="fc" id="L144">                    best = distances[current][matrixIndex]; next = matrixIndex;</span>
+                }
+            }
+<span class="fc" id="L147">            int requestIndex = next - 1; CollectionRequest request = pending.get(requestIndex);</span>
+<span class="fc" id="L148">            visited.add(next); total += best;</span>
+<span class="fc" id="L149">            request.assign(command.vehicleId(), command.driverId()); repository.save(request);</span>
+<span class="fc" id="L150">            stops.add(new RouteStop(order, request.requestId(), request.binId(), request.location(), best)); current = next;</span>
+        }
+<span class="fc" id="L152">        return new Route(command.vehicleId(), command.date(), stops, total);</span>
+    }
+
+    private static void validateMatrix(double[][] matrix, int expectedSize) {
+<span class="pc bpc" id="L156" title="2 of 4 branches missed.">        if (matrix == null || matrix.length != expectedSize) throw new MapsGatewayException(&quot;Distance matrix has wrong dimensions&quot;, null);</span>
+<span class="pc bpc" id="L157" title="2 of 6 branches missed.">        for (double[] row : matrix) if (row == null || row.length != expectedSize) throw new MapsGatewayException(&quot;Distance matrix has wrong dimensions&quot;, null);</span>
+<span class="fc" id="L158">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

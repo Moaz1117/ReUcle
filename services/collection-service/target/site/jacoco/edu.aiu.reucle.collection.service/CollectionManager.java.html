@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CollectionManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">collection-service</a> &gt; <a href="index.source.html" class="el_package">edu.aiu.reucle.collection.service</a> &gt; <span class="el_source">CollectionManager.java</span></div><h1>CollectionManager.java</h1><pre class="source lang-java linenums">package edu.aiu.reucle.collection.service;
+
+import edu.aiu.reucle.collection.client.IFleetClient;
+import edu.aiu.reucle.collection.model.CollectionTask;
+import edu.aiu.reucle.collection.model.RoutePlan;
+import edu.aiu.reucle.collection.repository.ICollectionRepository;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+// PM2: collection-service Class/Collaboration/Sequence Diagram -&gt; CollectionManager
+public class CollectionManager {
+    private final ICollectionRepository repository;
+    private final IFleetClient fleetClient;
+
+<span class="fc" id="L16">    public CollectionManager(ICollectionRepository repository, IFleetClient fleetClient) {</span>
+<span class="fc" id="L17">        this.repository = repository;</span>
+<span class="fc" id="L18">        this.fleetClient = fleetClient;</span>
+<span class="fc" id="L19">    }</span>
+
+    // PM2: collection-service Sequence (Schedule Pickup) -&gt; CollectionManager.schedulePickup
+    public CollectionTask schedulePickup(String binId) {
+<span class="fc" id="L23">        CollectionTask task = new CollectionTask(UUID.randomUUID().toString(), binId);</span>
+<span class="fc" id="L24">        return repository.save(task);</span>
+    }
+
+    // PM2: collection-service Collaboration/Sequence (Dispatch Vehicle) -&gt; CollectionManager.dispatchTask
+    public CollectionTask dispatchTask(String taskId, String vehicleId) {
+<span class="fc" id="L29">        CollectionTask task = repository.findById(taskId)</span>
+<span class="pc" id="L30">                .orElseThrow(() -&gt; new NoSuchElementException(&quot;CollectionTask not found: &quot; + taskId));</span>
+
+<span class="fc" id="L32">        boolean reserved = fleetClient.reserveVehicle(vehicleId, taskId);</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        if (!reserved) {</span>
+<span class="nc" id="L34">            throw new IllegalStateException(&quot;Vehicle unavailable for dispatch: &quot; + vehicleId);</span>
+        }
+
+<span class="fc" id="L37">        task.assignVehicle(vehicleId);</span>
+<span class="fc" id="L38">        return repository.save(task);</span>
+    }
+
+    // PM2: collection-service Sequence (Execute &amp; Complete Pickup) -&gt; CollectionManager.completePickup
+    public CollectionTask completePickup(String taskId, double collectedWeightKg) {
+<span class="fc" id="L43">        CollectionTask task = repository.findById(taskId)</span>
+<span class="pc" id="L44">                .orElseThrow(() -&gt; new NoSuchElementException(&quot;CollectionTask not found: &quot; + taskId));</span>
+
+<span class="fc" id="L46">        task.start();</span>
+<span class="fc" id="L47">        task.complete(collectedWeightKg);</span>
+<span class="fc" id="L48">        fleetClient.releaseVehicle(task.getAssignedVehicleId());</span>
+<span class="fc" id="L49">        return repository.save(task);</span>
+    }
+
+    public RoutePlan buildRoutePlan(String vehicleId, List&lt;String&gt; binIds) {
+<span class="fc" id="L53">        return new RoutePlan(UUID.randomUUID().toString(), vehicleId, binIds);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

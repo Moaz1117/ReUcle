@@ -1,0 +1,15 @@
+/workspace/bin-service/src/main/java/com/reucle/bin/adapter/ISensorGW.java
+/workspace/bin-service/src/main/java/com/reucle/bin/api/IBin.java
+/workspace/bin-service/src/main/java/com/reucle/bin/api/SensorEventListener.java
+/workspace/bin-service/src/main/java/com/reucle/bin/domain/BinStatus.java
+/workspace/bin-service/src/main/java/com/reucle/bin/domain/SensorReading.java
+/workspace/bin-service/src/main/java/com/reucle/bin/domain/SmartBin.java
+/workspace/bin-service/src/main/java/com/reucle/bin/domain/WasteComposition.java
+/workspace/bin-service/src/main/java/com/reucle/bin/dto/BinRegistrationData.java
+/workspace/bin-service/src/main/java/com/reucle/bin/dto/SensorData.java
+/workspace/bin-service/src/main/java/com/reucle/bin/exceptions/BinNotFoundException.java
+/workspace/bin-service/src/main/java/com/reucle/bin/exceptions/DeviceRegistrationException.java
+/workspace/bin-service/src/main/java/com/reucle/bin/exceptions/InvalidBinStateTransitionException.java
+/workspace/bin-service/src/main/java/com/reucle/bin/exceptions/InvalidReadingException.java
+/workspace/bin-service/src/main/java/com/reucle/bin/repository/IBinRepository.java
+/workspace/bin-service/src/main/java/com/reucle/bin/service/BinManager.java

@@ -1,0 +1,103 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD in .env}
+      # one password per service database (used by infra/postgres/init.sh)
+      BIN_DB_PASSWORD: ${BIN_DB_PASSWORD:?set BIN_DB_PASSWORD in .env}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?set NOTIFICATION_DB_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ADMIN_USER:-postgres}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  bin-service:
+    build: ./services/bin-service
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bin_service
+      DB_PASSWORD: ${BIN_DB_PASSWORD:?set BIN_DB_PASSWORD in .env}
+      DB_NAME: bin_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+
+  notification-service:
+    build: ./services/notification-service
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: notification_service
+      DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?set NOTIFICATION_DB_PASSWORD in .env}
+      DB_NAME: notification_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3012:3000"
+
+  analytics-service:
+    build: ./services/analytics-service
+    environment:
+      PORT: 3000
+    ports:
+      - '3011:3000'
+
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "3002:3001"
+
+  collection-service:
+    build: ./services/collection-service
+    ports:
+      - "3003:3003"
+
+  fleet-service:
+    build: ./services/fleet-service
+    ports:
+      - "3004:3004"
+
+  material-service:
+    build: ./services/material-service
+    ports:
+      - "3005:3005"
+
+  inventory-service:
+    build: ./services/inventory-service
+    ports:
+      - "3006:3006"
+
+  reward-service:
+    build: ./services/reward-service
+    ports:
+      - "3007:3007"
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "3008:3008"
+
+  shop-service:
+    build: ./services/shop-service
+    ports:
+      - "3009:3009"
+
+  marketplace-service:
+    build: ./services/marketplace-service
+    ports:
+      - "3010:3010"
+
+volumes:
+  pgdata:
+

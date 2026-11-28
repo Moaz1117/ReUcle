@@ -1,0 +1,3 @@
+/workspace/inventory-service/src/main/java/com/reucle/inventory/model/InventoryItem.java
+/workspace/inventory-service/src/main/java/com/reucle/inventory/repository/IInventoryRepository.java
+/workspace/inventory-service/src/main/java/com/reucle/inventory/service/InventoryManager.java

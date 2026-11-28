@@ -1,0 +1,13 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+bin-service,com.reucle.bin.dto,SensorData,0,15,0,0,0,1,0,1,0,1
+bin-service,com.reucle.bin.dto,BinRegistrationData,0,12,0,0,0,1,0,1,0,1
+bin-service,com.reucle.bin.domain,BinStatus,0,33,0,0,0,6,0,1,0,1
+bin-service,com.reucle.bin.domain,SensorReading,3,12,0,0,1,5,1,2,1,2
+bin-service,com.reucle.bin.domain,WasteComposition,0,15,0,0,0,6,0,3,0,3
+bin-service,com.reucle.bin.domain,SmartBin,6,227,1,25,2,56,3,28,2,16
+bin-service,com.reucle.bin.exceptions,DeviceRegistrationException,0,4,0,0,0,1,0,1,0,1
+bin-service,com.reucle.bin.exceptions,InvalidBinStateTransitionException,0,4,0,0,0,1,0,1,0,1
+bin-service,com.reucle.bin.exceptions,BinNotFoundException,0,4,0,0,0,1,0,1,0,1
+bin-service,com.reucle.bin.exceptions,InvalidReadingException,0,4,0,0,0,1,0,1,0,1
+bin-service,com.reucle.bin.api,SensorEventListener,0,10,0,0,0,5,0,2,0,2
+bin-service,com.reucle.bin.service,BinManager,0,110,0,10,0,28,0,11,0,6

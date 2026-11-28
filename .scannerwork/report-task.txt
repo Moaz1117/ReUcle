@@ -1,0 +1,6 @@
+projectKey=reucle
+serverUrl=http://localhost:9000
+serverVersion=26.11.0.134175
+dashboardUrl=http://localhost:9000/dashboard?id=reucle
+ceTaskId=b7a2e385-b127-4b74-b4a4-c3465f99c150
+ceTaskUrl=http://localhost:9000/api/ce/task?id=b7a2e385-b127-4b74-b4a4-c3465f99c150

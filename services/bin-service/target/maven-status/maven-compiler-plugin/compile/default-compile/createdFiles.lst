@@ -1,0 +1,15 @@
+com/reucle/bin/exceptions/InvalidBinStateTransitionException.class
+com/reucle/bin/domain/WasteComposition.class
+com/reucle/bin/dto/BinRegistrationData.class
+com/reucle/bin/domain/SensorReading.class
+com/reucle/bin/domain/BinStatus.class
+com/reucle/bin/repository/IBinRepository.class
+com/reucle/bin/domain/SmartBin.class
+com/reucle/bin/exceptions/BinNotFoundException.class
+com/reucle/bin/exceptions/DeviceRegistrationException.class
+com/reucle/bin/exceptions/InvalidReadingException.class
+com/reucle/bin/service/BinManager.class
+com/reucle/bin/api/SensorEventListener.class
+com/reucle/bin/dto/SensorData.class
+com/reucle/bin/adapter/ISensorGW.class
+com/reucle/bin/api/IBin.class

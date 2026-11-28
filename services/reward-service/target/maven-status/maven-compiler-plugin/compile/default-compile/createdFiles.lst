@@ -1,0 +1,6 @@
+com/reucle/reward/service/RewardManager.class
+com/reucle/reward/model/RewardTransaction.class
+com/reucle/reward/model/Wallet.class
+com/reucle/reward/service/RewardCalculator.class
+com/reucle/reward/model/RewardTransaction$TransactionType.class
+com/reucle/reward/repository/IWalletRepository.class

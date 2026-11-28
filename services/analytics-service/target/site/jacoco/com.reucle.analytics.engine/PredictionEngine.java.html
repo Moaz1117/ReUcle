@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PredictionEngine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">analytics-service</a> &gt; <a href="index.source.html" class="el_package">com.reucle.analytics.engine</a> &gt; <span class="el_source">PredictionEngine.java</span></div><h1>PredictionEngine.java</h1><pre class="source lang-java linenums">package com.reucle.analytics.engine;
+
+import com.reucle.analytics.model.BinPrediction;
+import com.reucle.analytics.model.Reading;
+import java.time.Duration;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+
+// PM2: analytics-service Class, Collaboration &amp; Sequence Diagram -&gt; PredictionEngine
+<span class="fc" id="L11">public class PredictionEngine {</span>
+    private static final double DEFAULT_FILL_RATE_PER_HOUR = 2.5;
+
+    // PM2: analytics-service Sequence (Generate Bin Prediction) -&gt; PredictionEngine.predictFill
+    public BinPrediction predictFill(String binId, List&lt;Reading&gt; readings, double horizonHours) {
+<span class="pc bpc" id="L16" title="1 of 2 branches missed.">        if (horizonHours &lt;= 0) {</span>
+<span class="nc" id="L17">            throw new IllegalArgumentException(&quot;horizonHours must be positive&quot;);</span>
+        }
+<span class="pc bpc" id="L19" title="1 of 4 branches missed.">        if (readings == null || readings.isEmpty()) {</span>
+<span class="fc" id="L20">            return new BinPrediction(UUID.randomUUID().toString(), binId, 0.0, 100.0 / DEFAULT_FILL_RATE_PER_HOUR);</span>
+        }
+
+<span class="fc" id="L23">        List&lt;Reading&gt; sorted = readings.stream()</span>
+<span class="fc" id="L24">                .sorted(Comparator.comparing(Reading::getRecordedAt))</span>
+<span class="fc" id="L25">                .toList();</span>
+
+<span class="fc" id="L27">        Reading latest = sorted.get(sorted.size() - 1);</span>
+<span class="fc" id="L28">        double currentFill = latest.getFillLevelPercent();</span>
+<span class="fc" id="L29">        double ratePerHour = computeFillRatePerHour(sorted);</span>
+
+<span class="fc" id="L31">        double projectedFill = Math.min(100.0, currentFill + (ratePerHour * horizonHours));</span>
+<span class="fc" id="L32">        double remainingCapacity = Math.max(0.0, 100.0 - currentFill);</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        double hoursToFull = ratePerHour &gt; 0.0 ? remainingCapacity / ratePerHour : Double.POSITIVE_INFINITY;</span>
+
+<span class="fc" id="L35">        return new BinPrediction(UUID.randomUUID().toString(), binId, projectedFill, hoursToFull);</span>
+    }
+
+    private double computeFillRatePerHour(List&lt;Reading&gt; sorted) {
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (sorted.size() &lt; 2) {</span>
+<span class="fc" id="L40">            return DEFAULT_FILL_RATE_PER_HOUR;</span>
+        }
+<span class="fc" id="L42">        Reading first = sorted.get(0);</span>
+<span class="fc" id="L43">        Reading last = sorted.get(sorted.size() - 1);</span>
+<span class="fc" id="L44">        long minutes = Duration.between(first.getRecordedAt(), last.getRecordedAt()).toMinutes();</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        if (minutes &lt;= 0) {</span>
+<span class="nc" id="L46">            return DEFAULT_FILL_RATE_PER_HOUR;</span>
+        }
+<span class="fc" id="L48">        double deltaFill = Math.max(0.0, last.getFillLevelPercent() - first.getFillLevelPercent());</span>
+<span class="fc" id="L49">        double rate = deltaFill / (minutes / 60.0);</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        return rate &gt; 0.0 ? rate : DEFAULT_FILL_RATE_PER_HOUR;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

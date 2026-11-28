@@ -1,0 +1,3 @@
+/workspace/marketplace-service/src/main/java/com/reucle/marketplace/model/Listing.java
+/workspace/marketplace-service/src/main/java/com/reucle/marketplace/repository/IListingRepository.java
+/workspace/marketplace-service/src/main/java/com/reucle/marketplace/service/MarketplaceManager.java

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BinPrediction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">analytics-service</a> &gt; <a href="index.source.html" class="el_package">com.reucle.analytics.model</a> &gt; <span class="el_source">BinPrediction.java</span></div><h1>BinPrediction.java</h1><pre class="source lang-java linenums">package com.reucle.analytics.model;
+
+import java.time.Instant;
+import java.util.Objects;
+
+// PM2: analytics-service Class, Object &amp; State Diagram -&gt; BinPrediction
+// States: NORMAL -&gt; NEAR_FULL -&gt; URGENT_PICKUP
+public class BinPrediction {
+<span class="fc" id="L9">    public enum UrgencyState {</span>
+<span class="fc" id="L10">        NORMAL, NEAR_FULL, URGENT_PICKUP</span>
+    }
+
+    private final String predictionId;
+    private final String binId;
+    private final double predictedFillPercent;
+    private final double estimatedHoursToFull;
+    private final UrgencyState urgencyState;
+    private final Instant generatedAt;
+
+<span class="fc" id="L20">    public BinPrediction(String predictionId, String binId, double predictedFillPercent, double estimatedHoursToFull) {</span>
+<span class="fc" id="L21">        this.predictionId = Objects.requireNonNull(predictionId);</span>
+<span class="fc" id="L22">        this.binId = Objects.requireNonNull(binId);</span>
+<span class="pc bpc" id="L23" title="2 of 4 branches missed.">        if (predictedFillPercent &lt; 0.0 || predictedFillPercent &gt; 100.0) {</span>
+<span class="nc" id="L24">            throw new IllegalArgumentException(&quot;predictedFillPercent must be between 0 and 100&quot;);</span>
+        }
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        if (estimatedHoursToFull &lt; 0.0) {</span>
+<span class="nc" id="L27">            throw new IllegalArgumentException(&quot;estimatedHoursToFull cannot be negative&quot;);</span>
+        }
+<span class="fc" id="L29">        this.predictedFillPercent = predictedFillPercent;</span>
+<span class="fc" id="L30">        this.estimatedHoursToFull = estimatedHoursToFull;</span>
+<span class="fc" id="L31">        this.urgencyState = classifyUrgency(predictedFillPercent, estimatedHoursToFull);</span>
+<span class="fc" id="L32">        this.generatedAt = Instant.now();</span>
+<span class="fc" id="L33">    }</span>
+
+    // PM2: analytics-service State Diagram -&gt; classifyUrgency
+    private static UrgencyState classifyUrgency(double predictedFill, double hoursToFull) {
+<span class="pc bpc" id="L37" title="1 of 4 branches missed.">        if (predictedFill &gt;= 90.0 || hoursToFull &lt;= 4.0) {</span>
+<span class="fc" id="L38">            return UrgencyState.URGENT_PICKUP;</span>
+        }
+<span class="pc bpc" id="L40" title="2 of 4 branches missed.">        if (predictedFill &gt;= 75.0 || hoursToFull &lt;= 12.0) {</span>
+<span class="nc" id="L41">            return UrgencyState.NEAR_FULL;</span>
+        }
+<span class="fc" id="L43">        return UrgencyState.NORMAL;</span>
+    }
+
+    public boolean requiresImmediateDispatch() {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        return urgencyState == UrgencyState.URGENT_PICKUP;</span>
+    }
+
+<span class="nc" id="L50">    public String getPredictionId() { return predictionId; }</span>
+<span class="fc" id="L51">    public String getBinId() { return binId; }</span>
+<span class="fc" id="L52">    public double getPredictedFillPercent() { return predictedFillPercent; }</span>
+<span class="fc" id="L53">    public double getEstimatedHoursToFull() { return estimatedHoursToFull; }</span>
+<span class="fc" id="L54">    public UrgencyState getUrgencyState() { return urgencyState; }</span>
+<span class="nc" id="L55">    public Instant getGeneratedAt() { return generatedAt; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

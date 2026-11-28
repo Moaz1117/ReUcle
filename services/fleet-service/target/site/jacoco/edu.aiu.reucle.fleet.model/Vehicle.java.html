@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Vehicle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fleet-service</a> &gt; <a href="index.source.html" class="el_package">edu.aiu.reucle.fleet.model</a> &gt; <span class="el_source">Vehicle.java</span></div><h1>Vehicle.java</h1><pre class="source lang-java linenums">package edu.aiu.reucle.fleet.model;
+
+import java.util.Objects;
+
+// PM2: fleet-service Class &amp; State Diagram -&gt; Vehicle
+// States: AVAILABLE &lt;-&gt; ON_ROUTE; AVAILABLE &lt;-&gt; MAINTENANCE
+public class Vehicle {
+<span class="fc" id="L8">    public enum VehicleStatus {</span>
+<span class="fc" id="L9">        AVAILABLE, ON_ROUTE, MAINTENANCE</span>
+    }
+
+    private final String vehicleId;
+    private final String plateNumber;
+    private final double capacityKg;
+    private double currentLoadKg;
+    private VehicleStatus status;
+
+<span class="fc" id="L18">    public Vehicle(String vehicleId, String plateNumber, double capacityKg) {</span>
+<span class="fc" id="L19">        this.vehicleId = Objects.requireNonNull(vehicleId);</span>
+<span class="fc" id="L20">        this.plateNumber = Objects.requireNonNull(plateNumber);</span>
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        if (capacityKg &lt;= 0) {</span>
+<span class="nc" id="L22">            throw new IllegalArgumentException(&quot;Vehicle capacity must be positive&quot;);</span>
+        }
+<span class="fc" id="L24">        this.capacityKg = capacityKg;</span>
+<span class="fc" id="L25">        this.currentLoadKg = 0.0;</span>
+<span class="fc" id="L26">        this.status = VehicleStatus.AVAILABLE;</span>
+<span class="fc" id="L27">    }</span>
+
+    // State Transition: [AVAILABLE] --(dispatch)--&gt; [ON_ROUTE]
+    public void dispatch() {
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (this.status != VehicleStatus.AVAILABLE) {</span>
+<span class="nc" id="L32">            throw new IllegalStateException(&quot;Vehicle cannot be dispatched from state: &quot; + status);</span>
+        }
+<span class="fc" id="L34">        this.status = VehicleStatus.ON_ROUTE;</span>
+<span class="fc" id="L35">    }</span>
+
+    // PM2: fleet-service Sequence -&gt; Vehicle.loadWaste(weightKg)
+    public void loadWaste(double weightKg) {
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (weightKg &lt;= 0) {</span>
+<span class="nc" id="L40">            throw new IllegalArgumentException(&quot;Load weight must be positive&quot;);</span>
+        }
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (this.currentLoadKg + weightKg &gt; this.capacityKg) {</span>
+<span class="fc" id="L43">            throw new IllegalStateException(&quot;Vehicle capacity exceeded for: &quot; + vehicleId);</span>
+        }
+<span class="fc" id="L45">        this.currentLoadKg += weightKg;</span>
+<span class="fc" id="L46">    }</span>
+
+    // State Transition: [ON_ROUTE] --(returnToDepot)--&gt; [AVAILABLE]
+    public void returnToDepot() {
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        if (this.status != VehicleStatus.ON_ROUTE) {</span>
+<span class="nc" id="L51">            throw new IllegalStateException(&quot;Only ON_ROUTE vehicles can return to depot&quot;);</span>
+        }
+<span class="fc" id="L53">        this.currentLoadKg = 0.0;</span>
+<span class="fc" id="L54">        this.status = VehicleStatus.AVAILABLE;</span>
+<span class="fc" id="L55">    }</span>
+
+    // State Transition: [AVAILABLE] --(scheduleMaintenance)--&gt; [MAINTENANCE]
+    public void sendToMaintenance() {
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (this.status != VehicleStatus.AVAILABLE) {</span>
+<span class="nc" id="L60">            throw new IllegalStateException(&quot;Cannot send vehicle to maintenance from state: &quot; + status);</span>
+        }
+<span class="fc" id="L62">        this.status = VehicleStatus.MAINTENANCE;</span>
+<span class="fc" id="L63">    }</span>
+
+    // State Transition: [MAINTENANCE] --(completeMaintenance)--&gt; [AVAILABLE]
+    public void completeMaintenance() {
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">        if (this.status != VehicleStatus.MAINTENANCE) {</span>
+<span class="nc" id="L68">            throw new IllegalStateException(&quot;Vehicle is not in MAINTENANCE&quot;);</span>
+        }
+<span class="fc" id="L70">        this.status = VehicleStatus.AVAILABLE;</span>
+<span class="fc" id="L71">    }</span>
+
+<span class="nc" id="L73">    public String getVehicleId() { return vehicleId; }</span>
+<span class="nc" id="L74">    public String getPlateNumber() { return plateNumber; }</span>
+<span class="nc" id="L75">    public double getCapacityKg() { return capacityKg; }</span>
+<span class="fc" id="L76">    public double getCurrentLoadKg() { return currentLoadKg; }</span>
+<span class="fc" id="L77">    public VehicleStatus getStatus() { return status; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FleetService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">fleet-service</a> &gt; <a href="index.source.html" class="el_package">edu.aiu.reucle.fleet</a> &gt; <span class="el_source">FleetService.java</span></div><h1>FleetService.java</h1><pre class="source lang-java linenums">package edu.aiu.reucle.fleet;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+/** Application service for FR7-FR8. */
+public final class FleetService {
+<span class="fc" id="L12">    public enum VehicleStatus { AVAILABLE, IN_USE, MAINTENANCE, RETIRED }</span>
+<span class="fc" id="L13">    public enum DriverShiftStatus { SCHEDULED, ACTIVE, COMPLETED }</span>
+
+    public static final class Vehicle {
+        private final String vehicleId; private final String plateNumber; private final double capacityKg;
+        private VehicleStatus status; private double mileageKm;
+<span class="fc" id="L18">        public Vehicle(String vehicleId, String plateNumber, double capacityKg, VehicleStatus status, double mileageKm) {</span>
+<span class="fc" id="L19">            this.vehicleId=Objects.requireNonNull(vehicleId); this.plateNumber=Objects.requireNonNull(plateNumber);</span>
+<span class="fc" id="L20">            this.capacityKg=capacityKg; this.status=Objects.requireNonNull(status); this.mileageKm=mileageKm;</span>
+<span class="fc" id="L21">        }</span>
+        public void transitionTo(VehicleStatus next) {
+<span class="fc bfc" id="L23" title="All 20 branches covered.">            boolean allowed=(status==VehicleStatus.AVAILABLE &amp;&amp; (next==VehicleStatus.IN_USE||next==VehicleStatus.MAINTENANCE||next==VehicleStatus.RETIRED))</span>
+                    ||(status==VehicleStatus.IN_USE &amp;&amp; (next==VehicleStatus.AVAILABLE||next==VehicleStatus.MAINTENANCE))
+                    ||(status==VehicleStatus.MAINTENANCE &amp;&amp; (next==VehicleStatus.AVAILABLE||next==VehicleStatus.RETIRED));
+<span class="fc bfc" id="L26" title="All 2 branches covered.">            if(!allowed) throw new InvalidVehicleTransitionException(status,next); status=next;</span>
+<span class="fc" id="L27">        }</span>
+        public void recordMaintenance(double mileageKm) {
+<span class="nc bnc" id="L29" title="All 2 branches missed.">            if(mileageKm&lt;this.mileageKm) throw new IllegalArgumentException(&quot;maintenance mileage cannot decrease&quot;);</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">            if(status==VehicleStatus.RETIRED) throw new InvalidVehicleTransitionException(status,VehicleStatus.MAINTENANCE);</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">            this.mileageKm=mileageKm; if(status!=VehicleStatus.MAINTENANCE) transitionTo(VehicleStatus.MAINTENANCE);</span>
+<span class="nc" id="L32">        }</span>
+<span class="pc" id="L33">        public String vehicleId(){return vehicleId;} public String plateNumber(){return plateNumber;}</span>
+<span class="pc" id="L34">        public double capacityKg(){return capacityKg;} public VehicleStatus status(){return status;} public double mileageKm(){return mileageKm;}</span>
+    }
+
+    public static final class DriverShift {
+        private final String shiftId, driverId, vehicleId; private final LocalDateTime startTime, endTime;
+        private DriverShiftStatus status;
+<span class="fc" id="L40">        public DriverShift(String shiftId,String driverId,String vehicleId,LocalDateTime startTime,LocalDateTime endTime,DriverShiftStatus status){</span>
+<span class="fc" id="L41">            this.shiftId=Objects.requireNonNull(shiftId);this.driverId=Objects.requireNonNull(driverId);this.vehicleId=Objects.requireNonNull(vehicleId);</span>
+<span class="fc" id="L42">            this.startTime=Objects.requireNonNull(startTime);this.endTime=Objects.requireNonNull(endTime);this.status=Objects.requireNonNull(status);</span>
+<span class="fc" id="L43">        }</span>
+        public void transitionTo(DriverShiftStatus next){
+<span class="fc bfc" id="L45" title="All 8 branches covered.">            boolean allowed=(status==DriverShiftStatus.SCHEDULED&amp;&amp;next==DriverShiftStatus.ACTIVE)||(status==DriverShiftStatus.ACTIVE&amp;&amp;next==DriverShiftStatus.COMPLETED);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if(!allowed) throw new InvalidDriverShiftTransitionException(status,next); status=next;</span>
+<span class="fc" id="L47">        }</span>
+<span class="fc" id="L48">        public String shiftId(){return shiftId;} public String driverId(){return driverId;} public String vehicleId(){return vehicleId;}</span>
+<span class="fc" id="L49">        public LocalDateTime startTime(){return startTime;} public LocalDateTime endTime(){return endTime;} public DriverShiftStatus status(){return status;}</span>
+    }
+
+    public record CreateDriverShiftCommand(String driverId,String vehicleId,LocalDateTime startTime,LocalDateTime endTime){
+<span class="fc" id="L53">        public CreateDriverShiftCommand{Objects.requireNonNull(driverId);Objects.requireNonNull(vehicleId);Objects.requireNonNull(startTime);Objects.requireNonNull(endTime);}</span>
+    }
+    public interface IVehicleRepository { List&lt;Vehicle&gt; findAvailable(LocalDate date); void save(Vehicle vehicle); }
+    public interface IShiftRepository {
+        boolean findOverlaps(String driverId,LocalDateTime startTime,LocalDateTime endTime);
+        Optional&lt;DriverShift&gt; findById(String shiftId); void save(DriverShift shift);
+    }
+<span class="fc" id="L60">    public static class ShiftOverlapException extends RuntimeException { public ShiftOverlapException(String driverId){super(&quot;Driver already has an overlapping shift: &quot;+driverId);} }</span>
+<span class="fc" id="L61">    public static class VehicleUnavailableException extends RuntimeException { public VehicleUnavailableException(String vehicleId){super(&quot;Vehicle is not available: &quot;+vehicleId);} }</span>
+<span class="fc" id="L62">    public static class InvalidShiftTimeException extends RuntimeException { public InvalidShiftTimeException(){super(&quot;Shift startTime must be before endTime&quot;);} }</span>
+<span class="nc" id="L63">    public static class DriverShiftNotFoundException extends RuntimeException { public DriverShiftNotFoundException(String shiftId){super(&quot;Shift not found: &quot;+shiftId);} }</span>
+<span class="fc" id="L64">    public static class InvalidVehicleTransitionException extends RuntimeException { public InvalidVehicleTransitionException(VehicleStatus from,VehicleStatus to){super(&quot;Invalid vehicle transition: &quot;+from+&quot; -&gt; &quot;+to);} }</span>
+<span class="fc" id="L65">    public static class InvalidDriverShiftTransitionException extends RuntimeException { public InvalidDriverShiftTransitionException(DriverShiftStatus from,DriverShiftStatus to){super(&quot;Invalid driver shift transition: &quot;+from+&quot; -&gt; &quot;+to);} }</span>
+
+    private final IVehicleRepository vehicleRepository; private final IShiftRepository shiftRepository; private final Supplier&lt;String&gt; shiftIdSupplier;
+<span class="fc" id="L68">    public FleetService(IVehicleRepository vehicleRepository,IShiftRepository shiftRepository,Supplier&lt;String&gt; shiftIdSupplier){</span>
+<span class="fc" id="L69">        this.vehicleRepository=Objects.requireNonNull(vehicleRepository);this.shiftRepository=Objects.requireNonNull(shiftRepository);this.shiftIdSupplier=Objects.requireNonNull(shiftIdSupplier);</span>
+<span class="fc" id="L70">    }</span>
+    public DriverShift createShift(CreateDriverShiftCommand command){
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if(!command.startTime().isBefore(command.endTime())) throw new InvalidShiftTimeException();</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if(shiftRepository.findOverlaps(command.driverId(),command.startTime(),command.endTime())) throw new ShiftOverlapException(command.driverId());</span>
+<span class="fc" id="L74">        List&lt;Vehicle&gt; available=vehicleRepository.findAvailable(command.startTime().toLocalDate());</span>
+<span class="pc bpc" id="L75" title="2 of 4 branches missed.">        boolean found=available.stream().anyMatch(v-&gt;v.vehicleId().equals(command.vehicleId())&amp;&amp;v.status()==VehicleStatus.AVAILABLE);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if(!found) throw new VehicleUnavailableException(command.vehicleId());</span>
+<span class="fc" id="L77">        DriverShift shift=new DriverShift(shiftIdSupplier.get(),command.driverId(),command.vehicleId(),command.startTime(),command.endTime(),DriverShiftStatus.SCHEDULED);</span>
+<span class="fc" id="L78">        shiftRepository.save(shift);return shift;</span>
+    }
+<span class="fc" id="L80">    public DriverShift startShift(String shiftId){return transition(shiftId,DriverShiftStatus.ACTIVE);}</span>
+<span class="fc" id="L81">    public DriverShift endShift(String shiftId){return transition(shiftId,DriverShiftStatus.COMPLETED);}</span>
+    private DriverShift transition(String shiftId,DriverShiftStatus target){
+<span class="pc" id="L83">        DriverShift shift=shiftRepository.findById(shiftId).orElseThrow(()-&gt;new DriverShiftNotFoundException(shiftId));</span>
+<span class="fc" id="L84">        shift.transitionTo(target);shiftRepository.save(shift);return shift;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

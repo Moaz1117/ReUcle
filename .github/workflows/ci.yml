@@ -1,0 +1,177 @@
+name: ReUcle CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test-all-services:
+    name: Unit Tests & Coverage (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - user-service
+          - bin-service
+          - collection-service
+          - fleet-service
+          - material-service
+          - inventory-service
+          - reward-service
+          - payment-service
+          - shop-service
+          - marketplace-service
+          - analytics-service
+          - notification-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+          cache-dependency-path: services/*/pom.xml
+
+      - name: Build, Test & Generate JaCoCo (${{ matrix.service }})
+        run: |
+          POM_PATH="services/${{ matrix.service }}/pom.xml"
+          if [ -f "$POM_PATH" ]; then
+            mvn -f "$POM_PATH" clean test jacoco:report -DfailIfNoTests=false
+          else
+            echo "No pom.xml found for ${{ matrix.service }}, skipping Maven build."
+          fi
+
+      - name: Upload Build & Coverage Artifacts (${{ matrix.service }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.service }}
+          path: |
+            services/${{ matrix.service }}/target/classes/
+            services/${{ matrix.service }}/target/site/jacoco/
+          if-no-files-found: ignore
+
+  sonar-analysis:
+    name: SonarQube Scan & Quality Gate (All Services)
+    needs: test-all-services
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download All Service Build & Coverage Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-*
+          merge-multiple: true
+
+      - name: Collect Source, Binary & Coverage Paths Across All Services
+        id: sonar-paths
+        run: |
+          SOURCES=""
+          TESTS=""
+          BINARIES=""
+          JACOCO=""
+
+          for svc in services/*; do
+            [ -d "$svc" ] || continue
+
+            if [ -d "$svc/src/main" ]; then
+              SOURCES="${SOURCES:+$SOURCES,}$svc/src/main"
+            elif [ -d "$svc/src" ]; then
+              SOURCES="${SOURCES:+$SOURCES,}$svc/src"
+            fi
+
+            if [ -d "$svc/src/test" ]; then
+              TESTS="${TESTS:+$TESTS,}$svc/src/test"
+            fi
+
+            if [ -d "$svc/target/classes" ]; then
+              BINARIES="${BINARIES:+$BINARIES,}$svc/target/classes"
+            fi
+
+            if [ -f "$svc/target/site/jacoco/jacoco.xml" ]; then
+              JACOCO="${JACOCO:+$JACOCO,}$svc/target/site/jacoco/jacoco.xml"
+            fi
+          done
+
+          echo "sources=$SOURCES" >> "$GITHUB_OUTPUT"
+          echo "tests=$TESTS" >> "$GITHUB_OUTPUT"
+          echo "binaries=$BINARIES" >> "$GITHUB_OUTPUT"
+          echo "jacoco=$JACOCO" >> "$GITHUB_OUTPUT"
+
+          echo "Detected sources: $SOURCES"
+          echo "Detected tests: $TESTS"
+          echo "Detected binaries: $BINARIES"
+          echo "Detected jacoco: $JACOCO"
+
+      - name: SonarQube Cloud Scan & Quality Gate
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.projectKey=moaz1117_reucle
+            -Dsonar.organization=moaz1117
+            -Dsonar.sources=${{ steps.sonar-paths.outputs.sources }}
+            -Dsonar.tests=${{ steps.sonar-paths.outputs.tests }}
+            -Dsonar.java.binaries=${{ steps.sonar-paths.outputs.binaries }}
+            -Dsonar.coverage.jacoco.xmlReportPaths=${{ steps.sonar-paths.outputs.jacoco }}
+            -Dsonar.qualitygate.wait=true
+
+  build-and-push:
+    name: Build & Push Docker Images
+    needs: [ test-all-services, sonar-analysis ]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - user-service
+          - bin-service
+          - collection-service
+          - fleet-service
+          - material-service
+          - inventory-service
+          - reward-service
+          - payment-service
+          - shop-service
+          - marketplace-service
+          - analytics-service
+          - notification-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/${{ matrix.service }}
+          push: true
+          tags: |
+            ghcr.io/moaz1117/reucle-${{ matrix.service }}:sha-${{ github.sha }}
+            ghcr.io/moaz1117/reucle-${{ matrix.service }}:${{ github.ref_name }}

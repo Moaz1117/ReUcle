@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Reading.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">analytics-service</a> &gt; <a href="index.source.html" class="el_package">com.reucle.analytics.model</a> &gt; <span class="el_source">Reading.java</span></div><h1>Reading.java</h1><pre class="source lang-java linenums">package com.reucle.analytics.model;
+
+import java.time.Instant;
+import java.util.Objects;
+
+// PM2: analytics-service Class &amp; Object Diagram -&gt; Reading
+public class Reading {
+    private final String readingId;
+    private final String binId;
+    private final double fillLevelPercent;
+    private final double weightKg;
+    private final Instant recordedAt;
+
+<span class="fc" id="L14">    public Reading(String readingId, String binId, double fillLevelPercent, double weightKg, Instant recordedAt) {</span>
+<span class="fc" id="L15">        this.readingId = Objects.requireNonNull(readingId);</span>
+<span class="fc" id="L16">        this.binId = Objects.requireNonNull(binId);</span>
+<span class="pc bpc" id="L17" title="2 of 4 branches missed.">        if (fillLevelPercent &lt; 0.0 || fillLevelPercent &gt; 100.0) {</span>
+<span class="nc" id="L18">            throw new IllegalArgumentException(&quot;fillLevelPercent must be between 0 and 100&quot;);</span>
+        }
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        if (weightKg &lt; 0.0) {</span>
+<span class="nc" id="L21">            throw new IllegalArgumentException(&quot;weightKg cannot be negative&quot;);</span>
+        }
+<span class="fc" id="L23">        this.fillLevelPercent = fillLevelPercent;</span>
+<span class="fc" id="L24">        this.weightKg = weightKg;</span>
+<span class="fc" id="L25">        this.recordedAt = Objects.requireNonNull(recordedAt);</span>
+<span class="fc" id="L26">    }</span>
+
+<span class="nc" id="L28">    public String getReadingId() { return readingId; }</span>
+<span class="nc" id="L29">    public String getBinId() { return binId; }</span>
+<span class="fc" id="L30">    public double getFillLevelPercent() { return fillLevelPercent; }</span>
+<span class="nc" id="L31">    public double getWeightKg() { return weightKg; }</span>
+<span class="fc" id="L32">    public Instant getRecordedAt() { return recordedAt; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

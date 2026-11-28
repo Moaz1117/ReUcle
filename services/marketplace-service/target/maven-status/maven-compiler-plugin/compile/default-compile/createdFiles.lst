@@ -1,0 +1,4 @@
+com/reucle/marketplace/model/Listing$ListingStatus.class
+com/reucle/marketplace/service/MarketplaceManager.class
+com/reucle/marketplace/repository/IListingRepository.class
+com/reucle/marketplace/model/Listing.class

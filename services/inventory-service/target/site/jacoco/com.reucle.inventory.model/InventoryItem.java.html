@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InventoryItem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">inventory-service</a> &gt; <a href="index.source.html" class="el_package">com.reucle.inventory.model</a> &gt; <span class="el_source">InventoryItem.java</span></div><h1>InventoryItem.java</h1><pre class="source lang-java linenums">package com.reucle.inventory.model;
+
+import java.util.Objects;
+
+// PM2: inventory-service Class &amp; State Diagram -&gt; InventoryItem
+// States: AVAILABLE &lt;-&gt; RESERVED; AVAILABLE -&gt; DEPLETED
+public class InventoryItem {
+<span class="fc" id="L8">    public enum InventoryStatus {</span>
+<span class="fc" id="L9">        AVAILABLE, RESERVED, DEPLETED</span>
+    }
+
+    private final String itemId;
+    private final String binId;
+    private final String materialId;
+    private double quantityKg;
+    private InventoryStatus status;
+
+<span class="fc" id="L18">    public InventoryItem(String itemId, String binId, String materialId, double quantityKg) {</span>
+<span class="fc" id="L19">        this.itemId = Objects.requireNonNull(itemId);</span>
+<span class="fc" id="L20">        this.binId = Objects.requireNonNull(binId);</span>
+<span class="fc" id="L21">        this.materialId = Objects.requireNonNull(materialId);</span>
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        if (quantityKg &lt; 0) {</span>
+<span class="nc" id="L23">            throw new IllegalArgumentException(&quot;Quantity cannot be negative&quot;);</span>
+        }
+<span class="fc" id="L25">        this.quantityKg = quantityKg;</span>
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        this.status = quantityKg &gt; 0 ? InventoryStatus.AVAILABLE : InventoryStatus.DEPLETED;</span>
+<span class="fc" id="L27">    }</span>
+
+    // PM2: inventory-service Sequence/Collaboration -&gt; InventoryItem.addStock(deltaKg)
+    public void addStock(double deltaKg) {
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (deltaKg &lt;= 0) {</span>
+<span class="nc" id="L32">            throw new IllegalArgumentException(&quot;Added quantity must be positive&quot;);</span>
+        }
+<span class="fc" id="L34">        this.quantityKg += deltaKg;</span>
+<span class="pc bpc" id="L35" title="3 of 4 branches missed.">        if (this.status == InventoryStatus.DEPLETED &amp;&amp; this.quantityKg &gt; 0) {</span>
+<span class="nc" id="L36">            this.status = InventoryStatus.AVAILABLE;</span>
+        }
+<span class="fc" id="L38">    }</span>
+
+    // PM2: inventory-service Sequence/Collaboration -&gt; InventoryItem.consumeStock(amountKg)
+    public void consumeStock(double amountKg) {
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        if (amountKg &lt;= 0) {</span>
+<span class="nc" id="L43">            throw new IllegalArgumentException(&quot;Consumed quantity must be positive&quot;);</span>
+        }
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (amountKg &gt; this.quantityKg) {</span>
+<span class="fc" id="L46">            throw new IllegalStateException(&quot;Insufficient stock for item: &quot; + itemId);</span>
+        }
+<span class="fc" id="L48">        this.quantityKg -= amountKg;</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (this.quantityKg == 0) {</span>
+<span class="fc" id="L50">            this.status = InventoryStatus.DEPLETED;</span>
+        }
+<span class="fc" id="L52">    }</span>
+
+<span class="nc" id="L54">    public String getItemId() { return itemId; }</span>
+<span class="fc" id="L55">    public String getBinId() { return binId; }</span>
+<span class="nc" id="L56">    public String getMaterialId() { return materialId; }</span>
+<span class="fc" id="L57">    public double getQuantityKg() { return quantityKg; }</span>
+<span class="fc" id="L58">    public InventoryStatus getStatus() { return status; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
